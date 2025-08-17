@@ -5,7 +5,7 @@ require_relative 'lib/beniya/version'
 Gem::Specification.new do |spec|
   spec.name = 'beniya'
   spec.version = Beniya::VERSION
-  spec.authors = ['beniya']
+  spec.authors = ['masisz']
   spec.email = ['masisz.1567@gmail.com']
 
   spec.summary = 'Ruby file manager'
