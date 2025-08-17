@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/beniya'
+
+# コマンドライン引数の処理
+if ARGV.include?('--check-health') || ARGV.include?('-c')
+  # ヘルスチェック実行
+  health_checker = Beniya::HealthChecker.new
+  success = health_checker.run_check
+  exit(success ? 0 : 1)
+elsif ARGV.include?('--help')
+  puts "beniya - Terminal-based file manager"
+  puts ""
+  puts "Usage:"
+  puts "  beniya [DIRECTORY]     Start beniya in specified directory"
+  puts "  beniya -c, --check-health  Check system dependencies"
+  puts "  beniya --help          Show this help message"
+  puts ""
+  puts "Examples:"
+  puts "  beniya                 # Start in current directory"
+  puts "  beniya /path/to/dir    # Start in specific directory"
+  puts "  beniya -c              # Check if all dependencies are available"
+  exit(0)
+else
+  start_directory = ARGV[0] || Dir.pwd
+  
+  # アプリケーション開始
+  app = Beniya::Application.new(start_directory)
+  app.run
+end
