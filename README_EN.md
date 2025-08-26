@@ -74,12 +74,14 @@ beniya --help           # Show help message
 | `o` | Open selected file with external editor |
 | `e` | Open current directory in file explorer |
 | `r` | Refresh directory contents              |
+| `a` | Create new file                         |
+| `A` | Create new directory                    |
 
 #### Real-time Filter
 
 | Key         | Function                               |
 | ----------- | -------------------------------------- |
-| `Space`     | Start filter mode / Re-edit filter     |
+| `s`         | Start filter mode / Re-edit filter     |
 | Text input  | Filter files by name (in filter mode)  |
 | `Enter`     | Keep filter and return to normal mode  |
 | `ESC`       | Clear filter and return to normal mode |
@@ -89,8 +91,8 @@ beniya --help           # Show help message
 
 | Key | Function                                 |
 | --- | ---------------------------------------- |
-| `/` | File name search with fzf (with preview) |
-| `f` | File content search with rga             |
+| `f` | File name search with fzf (with preview) |
+| `F` | File content search with rga             |
 
 #### System Operations
 
@@ -100,36 +102,36 @@ beniya --help           # Show help message
 
 ### Filter Feature
 
-#### Real-time Filter (`Space`)
+#### Real-time Filter (`s`)
 
-- **Start Filter**: Press `Space` to enter filter mode
+- **Start Filter**: Press `s` to enter filter mode
 - **Text Input Filtering**: Supports Japanese, English, numbers, and symbols
 - **Real-time Updates**: Display updates with each character typed
 - **Keep Filter**: Press `Enter` to maintain filter while returning to normal operations
 - **Clear Filter**: Press `ESC` to clear filter and return to normal display
-- **Re-edit**: Press `Space` again while filter is active to re-edit
+- **Re-edit**: Press `s` again while filter is active to re-edit
 - **Character Deletion**: Use `Backspace` to delete characters, auto-clear when empty
 
 #### Usage Example
 
 ```
-1. Space → Start filter mode
+1. s → Start filter mode
 2. ".rb" → Show only Ruby files
 3. Enter → Keep filter, return to normal operations
 4. j/k → Navigate within filtered results
-5. Space → Re-edit filter
+5. s → Re-edit filter
 6. ESC → Clear filter
 ```
 
 ### Search Features
 
-#### File Name Search (`/`)
+#### File Name Search (`f`)
 
 - Interactive file name search using `fzf`
 - Real-time preview display
 - Selected files automatically open in external editor
 
-#### File Content Search (`f`)
+#### File Content Search (`F`)
 
 - Advanced file content search using `rga` (ripgrep-all)
 - Searches PDFs, Word documents, text in images, and more

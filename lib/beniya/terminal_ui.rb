@@ -21,6 +21,7 @@ module Beniya
       @keybind_handler = keybind_handler
       @file_preview = file_preview
       @keybind_handler.set_directory_listing(@directory_listing)
+      @keybind_handler.set_terminal_ui(self)
 
       @running = true
       setup_terminal
@@ -32,6 +33,12 @@ module Beniya
       end
     end
 
+    def refresh_display
+      # ウィンドウサイズを更新してから画面をクリアして再描画
+      update_screen_size
+      print "\e[2J\e[H"  # clear screen, cursor to home
+    end
+
     private
 
     def setup_terminal
@@ -41,6 +48,10 @@ module Beniya
       print "\e[2J\e[H"     # clear screen, cursor to home (first time only)
 
       # re-acquire terminal size (just in case)
+      update_screen_size
+    end
+
+    def update_screen_size
       console = IO.console
       return unless console
 

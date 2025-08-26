@@ -29,6 +29,15 @@ module Beniya
         'keybind.search_text' => 'Search text: ',
         'keybind.no_matches' => 'No matches found.',
         'keybind.press_any_key' => 'Press any key to continue...',
+        'keybind.input_filename' => 'Enter filename: ',
+        'keybind.input_dirname' => 'Enter directory name: ',
+        'keybind.invalid_filename' => 'Invalid filename (cannot contain / or \\)',
+        'keybind.invalid_dirname' => 'Invalid directory name (cannot contain / or \\)',
+        'keybind.file_exists' => 'File already exists',
+        'keybind.directory_exists' => 'Directory already exists',
+        'keybind.file_created' => 'File created',
+        'keybind.directory_created' => 'Directory created',
+        'keybind.creation_error' => 'Creation error',
 
         # UI messages
         'ui.operation_prompt' => 'Operation: ',
@@ -88,6 +97,15 @@ module Beniya
         'keybind.search_text' => '検索テキスト: ',
         'keybind.no_matches' => 'マッチするものが見つかりません。',
         'keybind.press_any_key' => '何かキーを押して続行...',
+        'keybind.input_filename' => 'ファイル名を入力: ',
+        'keybind.input_dirname' => 'ディレクトリ名を入力: ',
+        'keybind.invalid_filename' => '無効なファイル名（/や\\を含むことはできません）',
+        'keybind.invalid_dirname' => '無効なディレクトリ名（/や\\を含むことはできません）',
+        'keybind.file_exists' => 'ファイルが既に存在します',
+        'keybind.directory_exists' => 'ディレクトリが既に存在します',
+        'keybind.file_created' => 'ファイルを作成しました',
+        'keybind.directory_created' => 'ディレクトリを作成しました',
+        'keybind.creation_error' => '作成エラー',
 
         # UI messages
         'ui.operation_prompt' => '操作: ',

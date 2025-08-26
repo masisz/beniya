@@ -22,6 +22,13 @@ module Beniya
       execute_command_with_line(application, file_path, line_number)
     end
 
+    def open_directory_in_explorer(directory_path)
+      return false unless File.exist?(directory_path)
+      return false unless File.directory?(directory_path)
+
+      execute_explorer_command(directory_path)
+    end
+
     private
 
     def find_application_for_file(file_path)
@@ -108,6 +115,25 @@ module Beniya
       else
         argument
       end
+    end
+
+    def execute_explorer_command(directory_path)
+      quoted_path = quote_shell_argument(directory_path)
+
+      case RbConfig::CONFIG['host_os']
+      when /mswin|mingw|cygwin/
+        # Windows
+        system("explorer #{quoted_path}")
+      when /darwin/
+        # macOS
+        system("open #{quoted_path}")
+      else
+        # Linux/Unix
+        system("xdg-open #{quoted_path}")
+      end
+    rescue StandardError => e
+      warn "ディレクトリを開けませんでした: #{e.message}"
+      false
     end
   end
 end

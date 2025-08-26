@@ -7,6 +7,7 @@ module Beniya
     def initialize
       @current_index = 0
       @directory_listing = nil
+      @terminal_ui = nil
       @file_opener = FileOpener.new
       @filter_mode = false
       @filter_query = ""
@@ -17,6 +18,10 @@ module Beniya
     def set_directory_listing(directory_listing)
       @directory_listing = directory_listing
       @current_index = 0
+    end
+
+    def set_terminal_ui(terminal_ui)
+      @terminal_ui = terminal_ui
     end
 
     def handle_key(key)
@@ -44,7 +49,9 @@ module Beniya
         refresh
       when 'o'  # o
         open_current_file
-      when ' '  # Space
+      when 'e'  # e - open directory in file explorer
+        open_directory_in_explorer
+      when 's'  # s - filter files
         if !@filter_query.empty?
           # フィルタが設定されている場合は再編集モードに入る
           @filter_mode = true
@@ -53,6 +60,8 @@ module Beniya
           # 新規フィルターモード開始
           start_filter_mode
         end
+      when ' '  # Space - disabled for future functionality
+        false
       when "\e"  # ESC
         if !@filter_query.empty?
           # フィルタが設定されている場合はクリア
@@ -63,12 +72,16 @@ module Beniya
         end
       when 'q'  # q
         exit_request
-      when 'e'  # e
-        open_explorer
       when '/'  # /
         fzf_search
-      when 'f'  # f
+      when 'f'  # f - file name search with fzf
+        fzf_search
+      when 'F'  # F - file content search with rga
         rga_search
+      when 'a'  # a
+        create_file
+      when 'A'  # A
+        create_directory
       else
         false  # #{ConfigLoader.message('keybind.invalid_key')}
       end
@@ -151,6 +164,9 @@ module Beniya
     end
 
     def refresh
+      # ウィンドウサイズを更新して画面を再描画
+      @terminal_ui&.refresh_display
+      
       @directory_listing.refresh
       if @filter_mode || !@filter_query.empty?
         # Re-apply filter with new directory contents
@@ -176,23 +192,14 @@ module Beniya
       end
     end
 
-    def exit_request
-      true  # request exit
+    def open_directory_in_explorer
+      current_path = @directory_listing&.current_path || Dir.pwd
+      @file_opener.open_directory_in_explorer(current_path)
+      true
     end
 
-    def open_explorer
-      current_path = @directory_listing&.current_path || Dir.pwd
-      
-      case RUBY_PLATFORM
-      when /darwin/  # macOS
-        system("open", current_path)
-      when /linux/   # Linux
-        system("xdg-open", current_path)
-      when /mswin|mingw|cygwin/  # Windows
-        system("explorer", current_path)
-      end
-      
-      true
+    def exit_request
+      true  # request exit
     end
 
     def fzf_search
@@ -327,6 +334,106 @@ module Beniya
     def exit_filter_mode
       # 既存メソッド（後方互換用）
       clear_filter_mode
+    end
+
+    def create_file
+      current_path = @directory_listing&.current_path || Dir.pwd
+      
+      # ファイル名の入力を求める
+      print ConfigLoader.message('keybind.input_filename')
+      filename = STDIN.gets.chomp
+      return false if filename.empty?
+      
+      # 不正なファイル名のチェック
+      if filename.include?('/') || filename.include?('\\')
+        puts "\n#{ConfigLoader.message('keybind.invalid_filename')}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        return false
+      end
+      
+      file_path = File.join(current_path, filename)
+      
+      # ファイルが既に存在する場合の確認
+      if File.exist?(file_path)
+        puts "\n#{ConfigLoader.message('keybind.file_exists')}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        return false
+      end
+      
+      begin
+        # ファイルを作成
+        File.write(file_path, '')
+        
+        # ディレクトリ表示を更新
+        @directory_listing.refresh
+        
+        # 作成したファイルを選択状態にする
+        entries = @directory_listing.list_entries
+        new_file_index = entries.find_index { |entry| entry[:name] == filename }
+        @current_index = new_file_index if new_file_index
+        
+        puts "\n#{ConfigLoader.message('keybind.file_created')}: #{filename}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        true
+      rescue => e
+        puts "\n#{ConfigLoader.message('keybind.creation_error')}: #{e.message}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        false
+      end
+    end
+
+    def create_directory
+      current_path = @directory_listing&.current_path || Dir.pwd
+      
+      # ディレクトリ名の入力を求める
+      print ConfigLoader.message('keybind.input_dirname')
+      dirname = STDIN.gets.chomp
+      return false if dirname.empty?
+      
+      # 不正なディレクトリ名のチェック
+      if dirname.include?('/') || dirname.include?('\\')
+        puts "\n#{ConfigLoader.message('keybind.invalid_dirname')}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        return false
+      end
+      
+      dir_path = File.join(current_path, dirname)
+      
+      # ディレクトリが既に存在する場合の確認
+      if File.exist?(dir_path)
+        puts "\n#{ConfigLoader.message('keybind.directory_exists')}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        return false
+      end
+      
+      begin
+        # ディレクトリを作成
+        Dir.mkdir(dir_path)
+        
+        # ディレクトリ表示を更新
+        @directory_listing.refresh
+        
+        # 作成したディレクトリを選択状態にする
+        entries = @directory_listing.list_entries
+        new_dir_index = entries.find_index { |entry| entry[:name] == dirname }
+        @current_index = new_dir_index if new_dir_index
+        
+        puts "\n#{ConfigLoader.message('keybind.directory_created')}: #{dirname}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        true
+      rescue => e
+        puts "\n#{ConfigLoader.message('keybind.creation_error')}: #{e.message}"
+        print ConfigLoader.message('keybind.press_any_key')
+        STDIN.getch
+        false
+      end
     end
   end
 end

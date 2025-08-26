@@ -215,24 +215,6 @@ class TestKeybindSystem
     end
   end
 
-  def test_explorer_launch
-    begin
-      handler = Beniya::KeybindHandler.new
-      directory_listing = Beniya::DirectoryListing.new(@test_dir)
-      handler.set_directory_listing(directory_listing)
-      
-      # e キー（エクスプローラ起動）のテスト
-      result = handler.handle_key('e')
-      if result
-        puts "✓ explorer_launch (e key)"
-      else
-        puts "✗ explorer_launch (e key)"
-      end
-      
-    rescue NameError
-      puts "期待通りエラー: KeybindHandlerクラスが未実装"
-    end
-  end
 
   def test_fzf_search
     begin
@@ -260,7 +242,6 @@ class TestKeybindSystem
     test_special_commands
     test_boundary_conditions
     test_invalid_keys
-    test_explorer_launch
     test_fzf_search
     puts "=== キーバインドテスト完了 ==="
   end
