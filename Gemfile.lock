@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    beniya (0.2.0)
+    beniya (0.3.0)
       io-console (~> 0.6)
       pastel (~> 0.8)
       tty-cursor (~> 0.7)
