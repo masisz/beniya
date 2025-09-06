@@ -13,7 +13,9 @@ beniya is a terminal-based file manager inspired by Yazi. It's implemented in Ru
 - **Lightweight & Simple**: A lightweight file manager written in Ruby
 - **Intuitive Operation**: Vim-like key bindings
 - **File Preview**: View text file contents on the fly
-- **Real-time Filter**: Filter files by name using Space key
+- **File Selection & Operations**: Select multiple files, move, copy, and delete
+- **Base Directory Operations**: Batch file operations to startup directory
+- **Real-time Filter**: Filter files by name using s key
 - **Advanced Search**: Powerful search using fzf and rga
 - **Multi-platform**: Runs on macOS, Linux, and Windows
 - **External Editor Integration**: Open files with your favorite editor
@@ -77,6 +79,15 @@ beniya --help           # Show help message
 | `a` | Create new file                         |
 | `A` | Create new directory                    |
 
+#### File Selection & Operations
+
+| Key     | Function                                    |
+| ------- | ------------------------------------------- |
+| `Space` | Select/deselect files and directories      |
+| `m`     | Move selected items to base directory      |
+| `p`     | Copy selected items to base directory      |
+| `x`     | Delete selected items                       |
+
 #### Real-time Filter
 
 | Key         | Function                               |
@@ -99,6 +110,44 @@ beniya --help           # Show help message
 | Key | Function    |
 | --- | ----------- |
 | `q` | Quit beniya |
+
+### File Selection & Operations
+
+#### File and Directory Selection (`Space`)
+
+- **Select/Deselect**: Use `Space` key to select or deselect files and directories
+- **Multiple Selection**: Select multiple files and directories simultaneously
+- **Visual Display**: Selected items are marked with ✓ and highlighted in green
+- **Selection Counter**: The number of selected items is shown on the second line of the screen
+
+#### Base Directory Operations
+
+The directory where beniya starts becomes the **base directory**, which serves as the destination for move and copy operations.
+
+| Operation | Key | Function                                |
+| --------- | --- | --------------------------------------- |
+| **Move**  | `m` | Move selected items to base directory  |
+| **Copy**  | `p` | Copy selected items to base directory  |
+| **Delete** | `x` | Delete selected items                   |
+
+#### Operation Workflow
+
+```
+1. Space → Select files/directories (multiple selection possible)
+2. Choose operation key:
+   - m → Move to base directory
+   - p → Copy to base directory
+   - x → Delete
+3. y/n → Confirm or cancel in confirmation dialog
+4. Result Display → Review operation results
+```
+
+#### Safety Features
+
+- **Confirmation Dialog**: Always confirm before move/copy/delete operations
+- **Duplicate Check**: Automatically skip files with same names
+- **Error Handling**: Proper handling of permission errors and other issues
+- **Operation Log**: Detailed display of operation results
 
 ### Filter Feature
 

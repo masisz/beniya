@@ -75,15 +75,16 @@ module Beniya
       # move cursor to top of screen (don't clear)
       print "\e[H"
 
-      # header
+      # header (2 lines)
       draw_header
+      draw_base_directory_info
 
       # main content (left: directory list, right: preview)
       entries = get_display_entries
       selected_entry = entries[@keybind_handler.current_index]
 
-      # calculate height with footer margin
-      content_height = @screen_height - 3 # ヘッダーとフッター分を除く
+      # calculate height with header (2 lines) and footer margin
+      content_height = @screen_height - 4 # ヘッダー（2行）とフッター分を除く
       left_width = @screen_width / 2
       right_width = @screen_width - left_width
 
@@ -125,13 +126,50 @@ module Beniya
       puts "\e[7m#{header.ljust(@screen_width)}\e[0m" # reverse display
     end
 
+    def draw_base_directory_info
+      # 強制的に表示 - デバッグ用に安全チェックを緩和
+      if @keybind_handler && @keybind_handler.instance_variable_get(:@base_directory)
+        base_dir = @keybind_handler.instance_variable_get(:@base_directory)
+        selected_count = @keybind_handler.selected_items.length
+        base_info = "📋 ベースディレクトリ: #{base_dir}"
+        
+        # 選択されたアイテム数を表示
+        if selected_count > 0
+          base_info += " | 選択中: #{selected_count}個"
+        end
+      else
+        # keybind_handlerがない場合、またはbase_directoryが設定されていない場合
+        base_info = "📋 ベースディレクトリ: #{Dir.pwd}"
+      end
+      
+      # 長すぎる場合は省略
+      if base_info.length > @screen_width - 2
+        if base_info.include?(" | 選択中:")
+          selected_part = base_info.split(" | 選択中:").last
+          available_length = @screen_width - 20 - " | 選択中:#{selected_part}".length
+        else
+          available_length = @screen_width - 20
+        end
+        
+        if available_length > 10
+          # パスの最後の部分を表示
+          dir_part = base_info.split(": ").last.split(" | ").first
+          short_base_dir = "...#{dir_part[-available_length..-1]}"
+          base_info = base_info.gsub(dir_part, short_base_dir)
+        end
+      end
+      
+      # 2行目に確実に表示
+      print "\e[2;1H\e[44m\e[37m#{base_info.ljust(@screen_width)}\e[0m"
+    end
+
     def draw_directory_list(entries, width, height)
       start_index = [@keybind_handler.current_index - height / 2, 0].max
       [start_index + height - 1, entries.length - 1].min
 
       (0...height).each do |i|
         entry_index = start_index + i
-        line_num = i + 2 # skip header
+        line_num = i + 3 # skip header (2 lines)
 
         print "\e[#{line_num};1H" # set cursor position
 
@@ -155,16 +193,19 @@ module Beniya
       # 左ペイン専用の安全な幅を計算（右ペインにはみ出さないよう）
       safe_width = [width - 1, @screen_width / 2 - 1].min
 
+      # 選択マークの追加
+      selection_mark = @keybind_handler.is_selected?(entry[:name]) ? "✓ " : "  "
+
       # ファイル名（必要に応じて切り詰め）
       name = entry[:name]
-      max_name_length = safe_width - 10 # アイコンとサイズ情報分を除く
+      max_name_length = safe_width - 12 # アイコン、選択マーク、サイズ情報分を除く
       name = name[0...max_name_length - 3] + '...' if max_name_length > 0 && name.length > max_name_length
 
       # サイズ情報
       size_info = format_size(entry[:size])
 
       # 行の内容を構築（安全な幅内で）
-      content_without_size = "#{icon} #{name}"
+      content_without_size = "#{selection_mark}#{icon} #{name}"
       available_for_content = safe_width - size_info.length
 
       line_content = if available_for_content > 0
@@ -180,7 +221,12 @@ module Beniya
         selected_color = ColorHelper.color_to_selected_ansi(ConfigLoader.colors[:selected])
         print "#{selected_color}#{line_content}#{ColorHelper.reset}"
       else
-        print "#{color}#{line_content}#{ColorHelper.reset}"
+        # 選択されたアイテムは異なる色で表示
+        if @keybind_handler.is_selected?(entry[:name])
+          print "\e[42m\e[30m#{line_content}\e[0m"  # 緑背景、黒文字
+        else
+          print "#{color}#{line_content}#{ColorHelper.reset}"
+        end
       end
     end
 
@@ -226,7 +272,7 @@ module Beniya
 
     def draw_file_preview(selected_entry, width, height, left_offset)
       (0...height).each do |i|
-        line_num = i + 2
+        line_num = i + 3 # skip header (2 lines)
         # カーソル位置を左パネルの右端に設定
         cursor_position = left_offset + 1
 

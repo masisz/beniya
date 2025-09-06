@@ -13,6 +13,8 @@ module Beniya
       @filter_query = ""
       @filtered_entries = []
       @original_entries = []
+      @selected_items = []
+      @base_directory = nil
     end
 
     def set_directory_listing(directory_listing)
@@ -22,6 +24,18 @@ module Beniya
 
     def set_terminal_ui(terminal_ui)
       @terminal_ui = terminal_ui
+    end
+
+    def set_base_directory(base_dir)
+      @base_directory = File.expand_path(base_dir)
+    end
+
+    def selected_items
+      @selected_items.dup
+    end
+
+    def is_selected?(entry_name)
+      @selected_items.include?(entry_name)
     end
 
     def handle_key(key)
@@ -60,8 +74,8 @@ module Beniya
           # 新規フィルターモード開始
           start_filter_mode
         end
-      when ' '  # Space - disabled for future functionality
-        false
+      when ' '  # Space - toggle selection
+        toggle_selection
       when "\e"  # ESC
         if !@filter_query.empty?
           # フィルタが設定されている場合はクリア
@@ -82,6 +96,12 @@ module Beniya
         create_file
       when 'A'  # A
         create_directory
+      when 'm'  # m - move selected files to base directory
+        move_selected_to_base
+      when 'p'  # p - copy selected files to base directory
+        copy_selected_to_base
+      when 'x'  # x - delete selected files
+        delete_selected_files
       else
         false  # #{ConfigLoader.message('keybind.invalid_key')}
       end
@@ -434,6 +454,133 @@ module Beniya
         STDIN.getch
         false
       end
+    end
+
+    def toggle_selection
+      entry = current_entry
+      return false unless entry
+
+      if @selected_items.include?(entry[:name])
+        @selected_items.delete(entry[:name])
+      else
+        @selected_items << entry[:name]
+      end
+      true
+    end
+
+    def move_selected_to_base
+      return false if @selected_items.empty? || @base_directory.nil?
+
+      if show_confirmation_dialog("移動", @selected_items.length)
+        perform_file_operation(:move, @selected_items, @base_directory)
+      else
+        false
+      end
+    end
+
+    def copy_selected_to_base
+      return false if @selected_items.empty? || @base_directory.nil?
+
+      if show_confirmation_dialog("コピー", @selected_items.length)
+        perform_file_operation(:copy, @selected_items, @base_directory)
+      else
+        false
+      end
+    end
+
+    def show_confirmation_dialog(operation, count)
+      print "\n#{count}個のアイテムを#{operation}しますか？ (y/n): "
+      response = STDIN.gets.chomp.downcase
+      response == 'y' || response == 'yes'
+    end
+
+    def perform_file_operation(operation, items, destination)
+      success_count = 0
+      current_path = @directory_listing&.current_path || Dir.pwd
+
+      items.each do |item_name|
+        source_path = File.join(current_path, item_name)
+        dest_path = File.join(destination, item_name)
+
+        begin
+          case operation
+          when :move
+            if File.exist?(dest_path)
+              puts "\n#{item_name} は既に移動先に存在します。スキップします。"
+              next
+            end
+            FileUtils.mv(source_path, dest_path)
+          when :copy
+            if File.exist?(dest_path)
+              puts "\n#{item_name} は既に移動先に存在します。スキップします。"
+              next
+            end
+            if File.directory?(source_path)
+              FileUtils.cp_r(source_path, dest_path)
+            else
+              FileUtils.cp(source_path, dest_path)
+            end
+          end
+          success_count += 1
+        rescue => e
+          puts "\n#{item_name} の#{operation == :move ? '移動' : 'コピー'}に失敗: #{e.message}"
+        end
+      end
+
+      # 操作完了後の処理
+      @selected_items.clear
+      @directory_listing.refresh if @directory_listing
+      
+      puts "\n#{success_count}個のアイテムを#{operation == :move ? '移動' : 'コピー'}しました。"
+      print "何かキーを押してください..."
+      STDIN.getch
+      true
+    end
+
+    def delete_selected_files
+      return false if @selected_items.empty?
+
+      if show_delete_confirmation(@selected_items.length)
+        perform_delete_operation(@selected_items)
+      else
+        false
+      end
+    end
+
+    def show_delete_confirmation(count)
+      print "\n#{count}個のアイテムを削除しますか？ (y/n): "
+      response = STDIN.gets.chomp.downcase
+      response == 'y' || response == 'yes'
+    end
+
+    def perform_delete_operation(items)
+      success_count = 0
+      current_path = @directory_listing&.current_path || Dir.pwd
+
+      items.each do |item_name|
+        item_path = File.join(current_path, item_name)
+
+        begin
+          if File.directory?(item_path)
+            FileUtils.rm_rf(item_path)
+          else
+            FileUtils.rm(item_path)
+          end
+          success_count += 1
+          puts "\n#{item_name} を削除しました。"
+        rescue => e
+          puts "\n#{item_name} の削除に失敗: #{e.message}"
+        end
+      end
+
+      # 削除完了後の処理
+      @selected_items.clear
+      @directory_listing.refresh if @directory_listing
+      
+      puts "\n#{success_count}個のアイテムを削除しました。"
+      print "何かキーを押してください..."
+      STDIN.getch
+      true
     end
   end
 end

@@ -19,8 +19,8 @@ module Beniya
 
       begin
         # binary file detection
-        sample = File.read(file_path, [file_size, 512].min)
-        return binary_response if binary_file?(sample)
+        sample = File.binread(file_path, [file_size, 512].min)
+        return binary_response(file_path) if binary_file?(sample)
 
         # process as text file
         lines = read_text_file(file_path, max_lines)
@@ -124,6 +124,14 @@ module Beniya
         { type: "code", language: "markdown" }
       when ".txt", ".log"
         { type: "text", language: nil }
+      when ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z"
+        { type: "archive", language: nil }
+      when ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg"
+        { type: "image", language: nil }
+      when ".pdf"
+        { type: "document", language: nil }
+      when ".exe", ".dmg", ".deb", ".rpm"
+        { type: "executable", language: nil }
       else
         { type: "text", language: nil }
       end
@@ -147,7 +155,19 @@ module Beniya
       }
     end
 
-    def binary_response
+    def binary_response(file_path = nil)
+      file_size = file_path ? File.size(file_path) : 0
+      modified_time = file_path ? File.mtime(file_path) : Time.now
+      
+      {
+        type: "binary",
+        message: "#{ConfigLoader.message('file.binary_file')} - #{ConfigLoader.message('file.cannot_preview')}",
+        lines: ["(#{ConfigLoader.message('file.binary_file')})"],
+        size: file_size,
+        modified: modified_time,
+        encoding: "binary"
+      }
+    rescue => e
       {
         type: "binary",
         message: "#{ConfigLoader.message('file.binary_file')} - #{ConfigLoader.message('file.cannot_preview')}",
