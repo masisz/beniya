@@ -19,7 +19,7 @@ beniya is a terminal-based file manager inspired by Yazi. It's implemented in Ru
 - **Advanced Search**: Powerful search using fzf and rga
 - **Multi-platform**: Runs on macOS, Linux, and Windows
 - **External Editor Integration**: Open files with your favorite editor
-- **Multi-language Support**: English and Japanese interface
+- **English Interface**: Clean English interface
 - **Health Check**: System dependency verification
 
 ## Installation
@@ -130,6 +130,16 @@ The directory where beniya starts becomes the **base directory**, which serves a
 | **Copy**  | `p` | Copy selected items to base directory  |
 | **Delete** | `x` | Delete selected items                   |
 
+#### Delete Operation Details
+
+- **Floating Dialog Confirmation**: Modern floating window with clear options
+- **Visual Feedback**: Red border and warning colors for attention
+- **Safe Operation**: Double confirmation before deletion
+- **Comprehensive Error Handling**: Detailed error messages for failed deletions
+- **Real-time Result Display**: Shows success/failure count in floating dialog
+- **File System Verification**: Confirms actual deletion before reporting success
+- **Debug Support**: Optional debug logging with BENIYA_DEBUG=1
+
 #### Operation Workflow
 
 ```
@@ -138,16 +148,18 @@ The directory where beniya starts becomes the **base directory**, which serves a
    - m → Move to base directory
    - p → Copy to base directory
    - x → Delete
-3. y/n → Confirm or cancel in confirmation dialog
-4. Result Display → Review operation results
+3. Floating Dialog → Confirm with Y/N, ESC to cancel
+4. Result Display → Review operation results in floating window
 ```
 
 #### Safety Features
 
-- **Confirmation Dialog**: Always confirm before move/copy/delete operations
+- **Floating Confirmation Dialog**: Modern floating window interface for confirmations
+- **Visual Warning System**: Red borders and colors for dangerous operations
 - **Duplicate Check**: Automatically skip files with same names
 - **Error Handling**: Proper handling of permission errors and other issues
-- **Operation Log**: Detailed display of operation results
+- **Operation Log**: Detailed display of operation results in floating dialogs
+- **Post-deletion Verification**: Confirms files are actually deleted from filesystem
 
 ### Filter Feature
 
@@ -203,39 +215,6 @@ apt install fzf
 ```
 
 ## Configuration
-
-### Language Settings
-
-beniya supports multiple languages. You can configure the language in several ways:
-
-#### Environment Variable (Recommended)
-
-```bash
-# Japanese
-export BENIYA_LANG=ja
-
-# English (default)
-export BENIYA_LANG=en
-```
-
-#### Configuration File
-
-```bash
-# Create config directory
-mkdir -p ~/.config/beniya
-
-# Copy example config
-cp config_example.rb ~/.config/beniya/config.rb
-
-# Edit the config file
-# Set LANGUAGE = 'ja' for Japanese or LANGUAGE = 'en' for English
-```
-
-### Priority Order
-
-1. Configuration file (`~/.config/beniya/config.rb`)
-2. `BENIYA_LANG` environment variable
-3. Default (English)
 
 ### Color Configuration (Customization)
 

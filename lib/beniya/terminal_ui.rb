@@ -131,22 +131,22 @@ module Beniya
       if @keybind_handler && @keybind_handler.instance_variable_get(:@base_directory)
         base_dir = @keybind_handler.instance_variable_get(:@base_directory)
         selected_count = @keybind_handler.selected_items.length
-        base_info = "📋 ベースディレクトリ: #{base_dir}"
+        base_info = "📋 Base Directory: #{base_dir}"
         
         # 選択されたアイテム数を表示
         if selected_count > 0
-          base_info += " | 選択中: #{selected_count}個"
+          base_info += " | Selected: #{selected_count} item(s)"
         end
       else
         # keybind_handlerがない場合、またはbase_directoryが設定されていない場合
-        base_info = "📋 ベースディレクトリ: #{Dir.pwd}"
+        base_info = "📋 Base Directory: #{Dir.pwd}"
       end
       
       # 長すぎる場合は省略
       if base_info.length > @screen_width - 2
-        if base_info.include?(" | 選択中:")
-          selected_part = base_info.split(" | 選択中:").last
-          available_length = @screen_width - 20 - " | 選択中:#{selected_part}".length
+        if base_info.include?(" | Selected:")
+          selected_part = base_info.split(" | Selected:").last
+          available_length = @screen_width - 20 - " | Selected:#{selected_part}".length
         else
           available_length = @screen_width - 20
         end
@@ -473,7 +473,7 @@ module Beniya
         input = STDIN.getch
       rescue Errno::ENOTTY, Errno::ENODEV
         # ターミナルでない環境（IDE等）では標準入力を使用
-        print "\n操作: "
+        print "\nOperation: "
         input = STDIN.gets
         return 'q' if input.nil?
         input = input.chomp.downcase

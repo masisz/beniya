@@ -66,7 +66,7 @@ module Beniya
         end
       end
     rescue StandardError => e
-      warn "ファイルを開けませんでした: #{e.message}"
+      warn "Failed to open file: #{e.message}"
       false
     end
 
@@ -105,7 +105,7 @@ module Beniya
         end
       end
     rescue StandardError => e
-      warn "ファイルを開けませんでした: #{e.message}"
+      warn "Failed to open file: #{e.message}"
       false
     end
 
@@ -132,7 +132,7 @@ module Beniya
         system("xdg-open #{quoted_path}")
       end
     rescue StandardError => e
-      warn "ディレクトリを開けませんでした: #{e.message}"
+      warn "Failed to open directory: #{e.message}"
       false
     end
   end
