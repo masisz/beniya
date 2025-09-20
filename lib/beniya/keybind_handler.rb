@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'bookmark'
+
 module Beniya
   class KeybindHandler
     attr_reader :current_index, :filter_query
@@ -15,6 +17,7 @@ module Beniya
       @original_entries = []
       @selected_items = []
       @base_directory = nil
+      @bookmark = Bookmark.new
     end
 
     def set_directory_listing(directory_listing)
@@ -100,6 +103,10 @@ module Beniya
         copy_selected_to_base
       when 'x'  # x - delete selected files
         delete_selected_files
+      when 'b'  # b - bookmark operations
+        show_bookmark_menu
+      when '1', '2', '3', '4', '5', '6', '7', '8', '9'  # number keys - go to bookmark
+        goto_bookmark(key.to_i)
       else
         false # #{ConfigLoader.message('keybind.invalid_key')}
       end
@@ -870,6 +877,172 @@ module Beniya
       # フローティングウィンドウの領域をクリア
       height.times do |row|
         print "\e[#{y + row};#{x}H#{' ' * width}"
+      end
+    end
+
+    # ブックマーク機能
+    def show_bookmark_menu
+      current_path = @directory_listing&.current_path || Dir.pwd
+      
+      # メニューの準備
+      title = 'Bookmark Menu'
+      content_lines = [
+        '',
+        '[A]dd current directory to bookmarks',
+        '[L]ist bookmarks',
+        '[R]emove bookmark',
+        '',
+        'Press 1-9 to go to bookmark directly',
+        '',
+        'Press any other key to cancel'
+      ]
+
+      dialog_width = 45
+      dialog_height = 4 + content_lines.length
+      x, y = get_screen_center(dialog_width, dialog_height)
+
+      # ダイアログの描画
+      draw_floating_window(x, y, dialog_width, dialog_height, title, content_lines, {
+                             border_color: "\e[34m", # 青色
+                             title_color: "\e[1;34m",   # 太字青色
+                             content_color: "\e[37m"    # 白色
+                           })
+
+      # キー入力待機
+      loop do
+        input = STDIN.getch.downcase
+
+        case input
+        when 'a'
+          clear_floating_window_area(x, y, dialog_width, dialog_height)
+          @terminal_ui&.refresh_display
+          add_bookmark_interactive(current_path)
+          return true
+        when 'l'
+          clear_floating_window_area(x, y, dialog_width, dialog_height)
+          @terminal_ui&.refresh_display
+          list_bookmarks_interactive
+          return true
+        when 'r'
+          clear_floating_window_area(x, y, dialog_width, dialog_height)
+          @terminal_ui&.refresh_display
+          remove_bookmark_interactive
+          return true
+        when '1', '2', '3', '4', '5', '6', '7', '8', '9'
+          clear_floating_window_area(x, y, dialog_width, dialog_height)
+          @terminal_ui&.refresh_display
+          goto_bookmark(input.to_i)
+          return true
+        else
+          # キャンセル
+          clear_floating_window_area(x, y, dialog_width, dialog_height)
+          @terminal_ui&.refresh_display
+          return false
+        end
+      end
+    end
+
+    def add_bookmark_interactive(path)
+      print ConfigLoader.message('bookmark.input_name') || "Enter bookmark name: "
+      name = STDIN.gets.chomp
+      return false if name.empty?
+
+      if @bookmark.add(path, name)
+        puts "\n#{ConfigLoader.message('bookmark.added') || 'Bookmark added'}: #{name}"
+      else
+        puts "\n#{ConfigLoader.message('bookmark.add_failed') || 'Failed to add bookmark'}"
+      end
+      
+      print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+      STDIN.getch
+      true
+    end
+
+    def remove_bookmark_interactive
+      bookmarks = @bookmark.list
+      
+      if bookmarks.empty?
+        puts "\n#{ConfigLoader.message('bookmark.no_bookmarks') || 'No bookmarks found'}"
+        print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+        STDIN.getch
+        return false
+      end
+
+      puts "\nBookmarks:"
+      bookmarks.each_with_index do |bookmark, index|
+        puts "  #{index + 1}. #{bookmark[:name]} (#{bookmark[:path]})"
+      end
+      
+      print ConfigLoader.message('bookmark.input_number') || "Enter number to remove: "
+      input = STDIN.gets.chomp
+      number = input.to_i
+      
+      if number > 0 && number <= bookmarks.length
+        bookmark_to_remove = bookmarks[number - 1]
+        if @bookmark.remove(bookmark_to_remove[:name])
+          puts "\n#{ConfigLoader.message('bookmark.removed') || 'Bookmark removed'}: #{bookmark_to_remove[:name]}"
+        else
+          puts "\n#{ConfigLoader.message('bookmark.remove_failed') || 'Failed to remove bookmark'}"
+        end
+      else
+        puts "\n#{ConfigLoader.message('bookmark.invalid_number') || 'Invalid number'}"
+      end
+      
+      print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+      STDIN.getch
+      true
+    end
+
+    def list_bookmarks_interactive
+      bookmarks = @bookmark.list
+      
+      if bookmarks.empty?
+        puts "\n#{ConfigLoader.message('bookmark.no_bookmarks') || 'No bookmarks found'}"
+        print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+        STDIN.getch
+        return false
+      end
+
+      puts "\nBookmarks:"
+      bookmarks.each_with_index do |bookmark, index|
+        puts "  #{index + 1}. #{bookmark[:name]} (#{bookmark[:path]})"
+      end
+      
+      print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+      STDIN.getch
+      true
+    end
+
+    def goto_bookmark(number)
+      bookmark = @bookmark.find_by_number(number)
+      
+      unless bookmark
+        puts "\n#{ConfigLoader.message('bookmark.not_found') || 'Bookmark not found'}: #{number}"
+        print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+        STDIN.getch
+        return false
+      end
+
+      unless Dir.exist?(bookmark[:path])
+        puts "\n#{ConfigLoader.message('bookmark.path_not_exist') || 'Bookmark path does not exist'}: #{bookmark[:path]}"
+        print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+        STDIN.getch
+        return false
+      end
+
+      # ディレクトリに移動
+      result = @directory_listing.navigate_to_path(bookmark[:path])
+      if result
+        @current_index = 0
+        clear_filter_mode
+        puts "\n#{ConfigLoader.message('bookmark.navigated') || 'Navigated to bookmark'}: #{bookmark[:name]}"
+        sleep(0.5) # 短時間表示
+        return true
+      else
+        puts "\n#{ConfigLoader.message('bookmark.navigate_failed') || 'Failed to navigate to bookmark'}: #{bookmark[:name]}"
+        print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
+        STDIN.getch
+        return false
       end
     end
   end

@@ -9,6 +9,7 @@ require "tmpdir"
 
 # minitestのプラグインを無効化してRailsとの競合を回避
 ENV['MT_PLUGINS'] = ""
+ENV['NO_PLUGINS'] = "true"
 
 # 手動でminitestを実行
 Minitest.run if __FILE__ == $0

@@ -67,6 +67,20 @@ module Beniya
       end
     end
 
+    def navigate_to_path(path)
+      return false if path.nil? || path.empty?
+
+      expanded_path = File.expand_path(path)
+
+      if File.directory?(expanded_path) && File.readable?(expanded_path)
+        @current_path = expanded_path
+        refresh
+        true
+      else
+        false
+      end
+    end
+
     private
 
     def determine_file_type(path)

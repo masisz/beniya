@@ -163,6 +163,7 @@ module Beniya
       print "\e[2;1H\e[44m\e[37m#{base_info.ljust(@screen_width)}\e[0m"
     end
 
+
     def draw_directory_list(entries, width, height)
       start_index = [@keybind_handler.current_index - height / 2, 0].max
       [start_index + height - 1, entries.length - 1].min

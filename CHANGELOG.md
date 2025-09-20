@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-01-20
+
+### Added
+- **🔖 Bookmark System**: Complete bookmark functionality with persistent storage
+- **Interactive Bookmark Menu**: Floating dialog with Add/List/Remove operations (`b` key)
+- **Quick Navigation**: Number keys (1-9) for instant bookmark jumping
+- **Persistent Storage**: Automatic save/load to `~/.config/beniya/bookmarks.json`
+- **Comprehensive Test Suite**: Full TDD implementation with 15+ test cases
+- **Multi-language Support**: English and Japanese bookmark interface
+- **Safety Features**: Duplicate checking, path validation, error handling
+
+### Changed
+- **Updated Help Messages**: Latest keybindings including bookmark operations
+- **Enhanced KeybindHandler**: Integrated bookmark menu and navigation
+- **Improved DirectoryListing**: Added `navigate_to_path` method for bookmark jumps
+- **UI Layout Optimization**: Removed 3rd header row for cleaner interface
+- **Documentation Updates**: Comprehensive README updates with bookmark usage
+
+### Technical Details
+- New `Bookmark` class with full CRUD operations
+- Maximum 9 bookmarks with automatic sorting
+- Floating window system for bookmark management
+- Integration with existing terminal UI components
+- **Detailed changelog**: [CHANGELOG_v0.5.0.md](./CHANGELOG_v0.5.0.md)
+
 ## [0.4.0] - 2025-01-13
 
 ### Added
