@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.5.0] - 2025-01-20
+## [0.5.0] - 2025-09-20
 
 ### Added
 - **🔖 Bookmark System**: Complete bookmark functionality with persistent storage
@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration with existing terminal UI components
 - **Detailed changelog**: [CHANGELOG_v0.5.0.md](./CHANGELOG_v0.5.0.md)
 
-## [0.4.0] - 2025-01-13
+## [0.4.0] - 2025-09-13
 
 ### Added
 - **Floating Dialog System**: Modern floating confirmation dialogs for delete operations
@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For detailed information, see [CHANGELOG_v0.4.0.md](./CHANGELOG_v0.4.0.md)
 
-## [0.3.0] - 2024-XX-XX
+## [0.3.0] - 2025-09-06
 
 ### Added
 - Enhanced file operations and management features
@@ -76,7 +76,7 @@ For detailed information, see [CHANGELOG_v0.4.0.md](./CHANGELOG_v0.4.0.md)
 - Performance improvements
 - Bug fixes and stability enhancements
 
-## [0.2.0] - 2024-XX-XX
+## [0.2.0] - 2025-08-26
 
 ### Added
 - New features and functionality improvements
@@ -86,7 +86,7 @@ For detailed information, see [CHANGELOG_v0.4.0.md](./CHANGELOG_v0.4.0.md)
 - User interface improvements
 - Performance optimizations
 
-## [0.1.0] - 2024-XX-XX
+## [0.1.0] - 2025-08-17
 
 ### Added
 - Initial release of beniya
