@@ -66,7 +66,7 @@ module Beniya
         open_current_file
       when 'e'  # e - open directory in file explorer
         open_directory_in_explorer
-      when 's'  # s - filter files
+      when 'f'  # f - filter files
         if !@filter_query.empty?
           # フィルタが設定されている場合は再編集モードに入る
           @filter_mode = true
@@ -89,7 +89,7 @@ module Beniya
         exit_request
       when '/'  # /
         fzf_search
-      when 'f'  # f - file name search with fzf
+      when 's'  # s - file name search with fzf
         fzf_search
       when 'F'  # F - file content search with rga
         rga_search

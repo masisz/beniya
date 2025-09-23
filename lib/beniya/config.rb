@@ -43,8 +43,8 @@ module Beniya
         'ui.operation_prompt' => 'Operation: ',
 
         # Help text
-        'help.full' => 'j/k:move h:back l:enter o:open g/G:top/bottom r:refresh s:filter f:search F:content a/A:create m/p/x:ops b:bookmark 1-9:goto q:quit',
-        'help.short' => 'j/k:move h:back l:enter o:open s:filter b:bookmark 1-9:goto q:quit',
+        'help.full' => 'j/k:move h:back l:enter o:open g/G:top/bottom r:refresh f:filter s:search F:content a/A:create m/p/x:ops b:bookmark 1-9:goto q:quit',
+        'help.short' => 'j/k:move h:back l:enter o:open f:filter s:search b:bookmark 1-9:goto q:quit',
 
         # Health check messages
         'health.title' => 'beniya Health Check',
@@ -111,8 +111,8 @@ module Beniya
         'ui.operation_prompt' => '操作: ',
 
         # Help text
-        'help.full' => 'j/k:移動 h:戻る l:入る o:開く g/G:先頭/末尾 r:更新 s:絞込 f:検索 F:内容 a/A:作成 m/p/x:操作 b:ブックマーク 1-9:移動 q:終了',
-        'help.short' => 'j/k:移動 h:戻る l:入る o:開く s:絞込 b:ブックマーク 1-9:移動 q:終了',
+        'help.full' => 'j/k:移動 h:戻る l:入る o:開く g/G:先頭/末尾 r:更新 f:絞込 s:検索 F:内容 a/A:作成 m/p/x:操作 b:ブックマーク 1-9:移動 q:終了',
+        'help.short' => 'j/k:移動 h:戻る l:入る o:開く f:絞込 s:検索 b:ブックマーク 1-9:移動 q:終了',
 
         # Health check messages
         'health.title' => 'beniya ヘルスチェック',
