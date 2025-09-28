@@ -105,6 +105,19 @@ beniya --help           # Show help message
 | `f` | File name search with fzf (with preview) |
 | `F` | File content search with rga             |
 
+#### Bookmark Functions
+
+| Key     | Function                        |
+| ------- | ------------------------------- |
+| `b`     | Show bookmark menu              |
+| `1`-`9` | Go to corresponding bookmark    |
+
+#### zoxide Integration
+
+| Key | Function                           |
+| --- | ---------------------------------- |
+| `z` | Select directory from zoxide history |
+
 #### System Operations
 
 | Key | Function    |
@@ -198,21 +211,88 @@ The directory where beniya starts becomes the **base directory**, which serves a
 - Searches PDFs, Word documents, text in images, and more
 - Filter results with fzf and jump to specific lines
 
+### Bookmark Features
+
+#### Bookmark Operations (`b`)
+
+- **Add Bookmark**: `[A]` - Add current directory to bookmarks
+- **List Bookmarks**: `[L]` - Display registered bookmarks
+- **Remove Bookmark**: `[R]` - Remove a bookmark
+- **Number Jump**: `1-9` - Jump directly to corresponding bookmark
+
+#### Quick Navigation (`1`-`9`)
+
+- Jump directly to bookmarks without going through the bookmark menu
+- Supports up to 9 bookmarks
+- Bookmark information is displayed at the top of the screen
+
+#### Bookmark Persistence
+
+- Bookmark information is automatically saved to `~/.config/beniya/bookmarks.json`
+- Bookmark information is preserved after beniya restarts
+- JSON file can be edited directly
+
+### zoxide Integration Features
+
+#### zoxide History Navigation (`z`)
+
+- **Smart History**: Display directory navigation history recorded by zoxide
+- **Frequency Order**: More frequently used directories appear higher in the list
+- **Interactive Selection**: Select from history using floating window
+- **Quick Navigation**: Select directories directly with number keys
+- **Abbreviated Path Display**: Home directory shown as `~` for readability
+
+#### Usage Example
+
+```
+1. z → Display zoxide history menu
+2. 1-20 → Select directory by displayed number
+3. ESC → Cancel and return to original screen
+```
+
+#### About zoxide
+
+[zoxide](https://github.com/ajeetdsouza/zoxide) is a smart cd command that learns your directory navigation habits.
+
+```bash
+# Installing zoxide
+# macOS (Homebrew)
+brew install zoxide
+
+# Ubuntu/Debian
+apt install zoxide
+
+# For other installation methods, see official documentation
+# https://github.com/ajeetdsouza/zoxide#installation
+```
+
+#### Requirements
+
+- zoxide must be installed on the system
+- Appropriate message is displayed when zoxide is not available
+- Empty history is handled gracefully
+
 ### Required External Tools
 
-The following tools are required for search functionality:
+The following tools are required for search and history functionality:
 
 ```bash
 # macOS (Homebrew)
-brew install fzf rga
+brew install fzf rga zoxide
 
 # Ubuntu/Debian
-apt install fzf
+apt install fzf zoxide
 # rga requires separate installation: https://github.com/phiresky/ripgrep-all
 
 # Other Linux distributions
 # Installation via package manager or manual installation required
 ```
+
+#### Tool Usage
+
+- **fzf**: File name search functionality (`f` key)
+- **rga**: File content search functionality (`F` key)
+- **zoxide**: Directory history navigation functionality (`z` key)
 
 ## Configuration
 

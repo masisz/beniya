@@ -68,6 +68,21 @@ class TestHealthChecker < Minitest::Test
     end
   end
 
+  def test_check_zoxide
+    result = @health_checker.send(:check_zoxide)
+    
+    assert_includes [:ok, :warning], result[:status]
+    assert result[:message].is_a?(String)
+    
+    if result[:status] == :ok
+      assert result[:message].include?("zoxide")
+      assert_nil result[:details]
+    else
+      assert result[:message].include?("zoxide")
+      assert result[:details].is_a?(String)
+    end
+  end
+
   def test_check_file_opener
     result = @health_checker.send(:check_file_opener)
     
@@ -111,6 +126,22 @@ class TestHealthChecker < Minitest::Test
     
     assert instruction.is_a?(String)
     assert instruction.include?("Install") || instruction.include?("github") || instruction.include?("Check")
+  end
+
+  def test_install_instruction_for_zoxide
+    instruction = @health_checker.send(:install_instruction_for, 'zoxide')
+    
+    assert instruction.is_a?(String)
+    
+    # プラットフォーム固有の指示が含まれることを確認
+    case RUBY_PLATFORM
+    when /darwin/
+      assert instruction.include?("brew")
+    when /linux/
+      assert instruction.include?("apt") || instruction.include?("package manager")
+    else
+      assert instruction.include?("Install") || instruction.include?("Check")
+    end
   end
 
   def test_run_check_returns_boolean

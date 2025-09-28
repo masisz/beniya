@@ -20,6 +20,7 @@ module Beniya
         { name: ConfigLoader.message('health.required_gems'), method: :check_required_gems },
         { name: ConfigLoader.message('health.fzf'), method: :check_fzf },
         { name: ConfigLoader.message('health.rga'), method: :check_rga },
+        { name: ConfigLoader.message('health.zoxide'), method: :check_zoxide },
         { name: ConfigLoader.message('health.file_opener'), method: :check_file_opener }
       ]
 
@@ -118,6 +119,23 @@ module Beniya
       end
     end
 
+    def check_zoxide
+      if system("which zoxide > /dev/null 2>&1")
+        version = `zoxide --version 2>/dev/null`.strip
+        {
+          status: :ok,
+          message: version,
+          details: nil
+        }
+      else
+        {
+          status: :warning,
+          message: "zoxide #{ConfigLoader.message('health.tool_not_found')}",
+          details: install_instruction_for('zoxide')
+        }
+      end
+    end
+
     def check_file_opener
       case RUBY_PLATFORM
       when /darwin/
@@ -160,6 +178,8 @@ module Beniya
           "#{ConfigLoader.message('health.install_brew')} fzf"
         when 'rga'
           "#{ConfigLoader.message('health.install_brew')} rga"
+        when 'zoxide'
+          "#{ConfigLoader.message('health.install_brew')} zoxide"
         end
       when /linux/
         case tool
@@ -167,6 +187,8 @@ module Beniya
           "#{ConfigLoader.message('health.install_apt')} fzf (Ubuntu/Debian) or check your package manager"
         when 'rga'
           ConfigLoader.message('health.rga_releases')
+        when 'zoxide'
+          "#{ConfigLoader.message('health.install_apt')} zoxide (Ubuntu/Debian) or check your package manager"
         end
       else
         ConfigLoader.message('health.install_guide')

@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-01-XX
+
+### Added
+- **🚀 zoxide Integration**: Complete zoxide directory history navigation functionality
+- **z Key Navigation**: Press `z` key to display zoxide movement history and navigate to frequently used directories
+- **Smart History Display**: Frequency-based directory sorting with up to 20 history entries
+- **Interactive Selection UI**: Modern floating window for intuitive history selection
+- **Fast Number Key Selection**: Direct directory selection using number keys 1-20
+- **Health Check Enhancement**: zoxide installation status and version checking with `beniya -c`
+- **Multi-platform Installation Support**: Automated installation instructions for macOS and Linux
+- **Graceful Fallback**: Proper handling when zoxide is not installed or history is empty
+
+### Changed
+- **Footer Help Updates**: Added `z:zoxide` to key binding display in both English and Japanese
+- **External Tools Documentation**: Updated README with zoxide installation and usage instructions
+- **Health Check System**: Extended to include zoxide as optional dependency with platform-specific guidance
+- **Error Messaging**: Improved user guidance for zoxide-related issues
+
+### Technical Details
+- New zoxide integration methods in `KeybindHandler` class
+- Extended `HealthChecker` with zoxide version checking
+- Comprehensive test suite for zoxide functionality
+- Safe path escaping using Ruby's Shellwords module
+- **Detailed changelog**: [CHANGELOG_v0.6.0.md](./CHANGELOG_v0.6.0.md)
+
 ## [0.5.0] - 2025-09-20
 
 ### Added
@@ -99,6 +124,8 @@ For detailed information, see [CHANGELOG_v0.4.0.md](./CHANGELOG_v0.4.0.md)
 
 ## Release Links
 
+- [v0.6.0 Detailed Release Notes](./CHANGELOG_v0.6.0.md) - zoxide Integration and Enhanced Health Checking
+- [v0.5.0 Detailed Release Notes](./CHANGELOG_v0.5.0.md) - Bookmark System Implementation
 - [v0.4.0 Detailed Release Notes](./CHANGELOG_v0.4.0.md) - Comprehensive changelog with technical details
 - [GitHub Releases](https://github.com/masisz/beniya/releases) - Download releases and view release history
 - [Installation Guide](./README.md#installation) - How to install beniya

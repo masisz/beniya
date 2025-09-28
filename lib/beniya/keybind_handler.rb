@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require 'shellwords'
 require_relative 'bookmark'
+require_relative 'file_opener'
 
 module Beniya
   class KeybindHandler
@@ -105,6 +107,8 @@ module Beniya
         delete_selected_files
       when 'b'  # b - bookmark operations
         show_bookmark_menu
+      when 'z'  # z - zoxide history navigation
+        show_zoxide_menu
       when '1', '2', '3', '4', '5', '6', '7', '8', '9'  # number keys - go to bookmark
         goto_bookmark(key.to_i)
       else
@@ -1043,6 +1047,181 @@ module Beniya
         print ConfigLoader.message('keybind.press_any_key') || 'Press any key to continue...'
         STDIN.getch
         return false
+      end
+    end
+
+    # zoxide 機能
+    def show_zoxide_menu
+      history = get_zoxide_history
+      
+      if history.empty?
+        show_no_zoxide_history_message
+        return false
+      end
+
+      # zoxide履歴選択UI
+      selected_path = select_from_zoxide_history(history)
+      
+      if selected_path
+        navigate_to_zoxide_directory(selected_path)
+      else
+        false
+      end
+    end
+
+    private
+
+    def zoxide_available?
+      system('which zoxide > /dev/null 2>&1')
+    end
+
+    def get_zoxide_history
+      return [] unless zoxide_available?
+
+      begin
+        # zoxide query --list --score で履歴を取得（スコア順）
+        output = `zoxide query --list --score 2>/dev/null`.strip
+        return [] if output.empty?
+
+        # 各行をパスとスコアに分けて配列に変換
+        lines = output.split("\n")
+        history = lines.map do |line|
+          # zoxide の出力は "スコア パス" の形式
+          if line.match(/^\s*(\d+(?:\.\d+)?)\s+(.+)$/)
+            score = $1.to_f
+            path = $2.strip
+            { path: path, score: score }
+          else
+            # スコアがない場合はパスのみ（後方互換性）
+            { path: line.strip, score: 0.0 }
+          end
+        end
+
+        # 有効なディレクトリのみフィルタリング
+        history.select { |entry| Dir.exist?(entry[:path]) }
+      rescue StandardError
+        []
+      end
+    end
+
+    def show_no_zoxide_history_message
+      title = 'Zoxide'
+      content_lines = [
+        '',
+        'No zoxide history found.',
+        '',
+        'Zoxide learns from your directory navigation.',
+        'Use zoxide more to build up history.',
+        '',
+        'Press any key to continue...'
+      ]
+
+      dialog_width = 45
+      dialog_height = 4 + content_lines.length
+      x, y = get_screen_center(dialog_width, dialog_height)
+
+      draw_floating_window(x, y, dialog_width, dialog_height, title, content_lines, {
+                             border_color: "\e[33m", # 黄色
+                             title_color: "\e[1;33m",   # 太字黄色
+                             content_color: "\e[37m"    # 白色
+                           })
+
+      STDIN.getch
+      clear_floating_window_area(x, y, dialog_width, dialog_height)
+      @terminal_ui&.refresh_display
+    end
+
+    def select_from_zoxide_history(history)
+      title = 'Zoxide History'
+      
+      # 履歴を表示用に整形（最大20件）
+      display_history = history.first(20)
+      content_lines = ['']
+      
+      display_history.each_with_index do |entry, index|
+        # パスの表示を短縮（ホームディレクトリを ~ に置換）
+        display_path = entry[:path].gsub(ENV['HOME'], '~')
+        line = "  #{index + 1}. #{display_path}"
+        # 長すぎる場合は切り詰め
+        line = line[0...60] + '...' if line.length > 63
+        content_lines << line
+      end
+      
+      content_lines << ''
+      content_lines << 'Enter number (1-' + display_history.length.to_s + ') or ESC to cancel'
+
+      dialog_width = 70
+      dialog_height = [4 + content_lines.length, 25].min
+      x, y = get_screen_center(dialog_width, dialog_height)
+
+      draw_floating_window(x, y, dialog_width, dialog_height, title, content_lines, {
+                             border_color: "\e[36m", # シアン色
+                             title_color: "\e[1;36m",   # 太字シアン色
+                             content_color: "\e[37m"    # 白色
+                           })
+
+      # 数字入力モード
+      input_buffer = ''
+      
+      loop do
+        char = STDIN.getch
+        
+        case char
+        when "\e", "\x03" # ESC, Ctrl+C
+          clear_floating_window_area(x, y, dialog_width, dialog_height)
+          @terminal_ui&.refresh_display
+          return nil
+        when "\r", "\n" # Enter
+          if !input_buffer.empty?
+            number = input_buffer.to_i
+            if number > 0 && number <= display_history.length
+              selected_entry = display_history[number - 1]
+              clear_floating_window_area(x, y, dialog_width, dialog_height)
+              @terminal_ui&.refresh_display
+              return selected_entry[:path]
+            end
+          end
+          # 無効な入力の場合は再度入力を求める
+          input_buffer = ''
+        when "\u007f", "\b" # Backspace
+          input_buffer = input_buffer[0...-1] unless input_buffer.empty?
+        when /[0-9]/
+          input_buffer += char
+          # 最大2桁まで
+          input_buffer = input_buffer[-2..-1] if input_buffer.length > 2
+          
+          # 入力された数字が範囲内の場合は即座に選択
+          number = input_buffer.to_i
+          if number > 0 && number <= display_history.length && 
+             (number >= 10 || input_buffer.length == 1)
+            selected_entry = display_history[number - 1]
+            clear_floating_window_area(x, y, dialog_width, dialog_height)
+            @terminal_ui&.refresh_display
+            return selected_entry[:path]
+          end
+        end
+      end
+    end
+
+    def navigate_to_zoxide_directory(target_path)
+      return false unless Dir.exist?(target_path)
+
+      # DirectoryListingのnavigate_to_pathメソッドを使用してディレクトリに移動
+      result = @directory_listing.navigate_to_path(target_path)
+      if result
+        @current_index = 0
+        clear_filter_mode
+        
+        # zoxide に移動を記録
+        begin
+          system("zoxide add #{Shellwords.escape(target_path)} > /dev/null 2>&1")
+        rescue StandardError
+          # zoxide add が失敗しても移動は成功として扱う
+        end
+        
+        true
+      else
+        false
       end
     end
   end

@@ -43,8 +43,8 @@ module Beniya
         'ui.operation_prompt' => 'Operation: ',
 
         # Help text
-        'help.full' => 'j/k:move h:back l:enter o:open g/G:top/bottom r:refresh f:filter s:search F:content a/A:create m/p/x:ops b:bookmark 1-9:goto q:quit',
-        'help.short' => 'j/k:move h:back l:enter o:open f:filter s:search b:bookmark 1-9:goto q:quit',
+        'help.full' => 'j/k:move h:back l:enter o:open g/G:top/bottom r:refresh f:filter s:search F:content a/A:create m/p/x:ops b:bookmark z:zoxide 1-9:goto q:quit',
+        'help.short' => 'j/k:move h:back l:enter o:open f:filter s:search b:bookmark z:zoxide 1-9:goto q:quit',
 
         # Health check messages
         'health.title' => 'beniya Health Check',
@@ -52,6 +52,7 @@ module Beniya
         'health.required_gems' => 'Required gems',
         'health.fzf' => 'fzf (file search)',
         'health.rga' => 'rga (content search)',
+        'health.zoxide' => 'zoxide (directory history)',
         'health.file_opener' => 'System file opener',
         'health.summary' => 'Summary:',
         'health.ok' => 'OK',
@@ -111,8 +112,8 @@ module Beniya
         'ui.operation_prompt' => '操作: ',
 
         # Help text
-        'help.full' => 'j/k:移動 h:戻る l:入る o:開く g/G:先頭/末尾 r:更新 f:絞込 s:検索 F:内容 a/A:作成 m/p/x:操作 b:ブックマーク 1-9:移動 q:終了',
-        'help.short' => 'j/k:移動 h:戻る l:入る o:開く f:絞込 s:検索 b:ブックマーク 1-9:移動 q:終了',
+        'help.full' => 'j/k:移動 h:戻る l:入る o:開く g/G:先頭/末尾 r:更新 f:絞込 s:検索 F:内容 a/A:作成 m/p/x:操作 b:ブックマーク z:zoxide 1-9:移動 q:終了',
+        'help.short' => 'j/k:移動 h:戻る l:入る o:開く f:絞込 s:検索 b:ブックマーク z:zoxide 1-9:移動 q:終了',
 
         # Health check messages
         'health.title' => 'beniya ヘルスチェック',
@@ -120,6 +121,7 @@ module Beniya
         'health.required_gems' => '必須 gem',
         'health.fzf' => 'fzf (ファイル検索)',
         'health.rga' => 'rga (内容検索)',
+        'health.zoxide' => 'zoxide (ディレクトリ履歴)',
         'health.file_opener' => 'システムファイルオープナー',
         'health.summary' => 'サマリー:',
         'health.ok' => 'OK',
