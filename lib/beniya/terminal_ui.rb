@@ -4,14 +4,43 @@ require 'io/console'
 
 module Beniya
   class TerminalUI
+    # Layout constants
+    HEADER_HEIGHT = 2              # Header占有行数
+    FOOTER_HEIGHT = 1              # Footer占有行数
+    HEADER_FOOTER_MARGIN = 4       # Header + Footer分のマージン
+
+    # Panel layout ratios
+    LEFT_PANEL_RATIO = 0.5         # 左パネルの幅比率
+    RIGHT_PANEL_RATIO = 1.0 - LEFT_PANEL_RATIO
+
+    # Display constants
+    DEFAULT_SCREEN_WIDTH = 80      # デフォルト画面幅
+    DEFAULT_SCREEN_HEIGHT = 24     # デフォルト画面高さ
+    HEADER_PADDING = 2             # ヘッダーのパディング
+    BASE_INFO_RESERVED_WIDTH = 20  # ベースディレクトリ表示の予約幅
+    BASE_INFO_MIN_WIDTH = 10       # ベースディレクトリ表示の最小幅
+    FILTER_TEXT_RESERVED = 15      # フィルタテキスト表示の予約幅
+
+    # File display constants
+    ICON_SIZE_PADDING = 12         # アイコン、選択マーク、サイズ情報分
+    CURSOR_OFFSET = 1              # カーソル位置のオフセット
+
+    # Size display constants (bytes)
+    KILOBYTE = 1024
+    MEGABYTE = KILOBYTE * 1024
+    GIGABYTE = MEGABYTE * 1024
+
+    # Line offsets
+    CONTENT_START_LINE = 3         # コンテンツ開始行（ヘッダー2行スキップ）
+
     def initialize
       console = IO.console
       if console
         @screen_width, @screen_height = console.winsize.reverse
       else
         # fallback values (for test environments etc.)
-        @screen_width = 80
-        @screen_height = 24
+        @screen_width = DEFAULT_SCREEN_WIDTH
+        @screen_height = DEFAULT_SCREEN_HEIGHT
       end
       @running = false
     end
@@ -83,9 +112,9 @@ module Beniya
       entries = get_display_entries
       selected_entry = entries[@keybind_handler.current_index]
 
-      # calculate height with header (2 lines) and footer margin
-      content_height = @screen_height - 4 # ヘッダー（2行）とフッター分を除く
-      left_width = @screen_width / 2
+      # calculate height with header and footer margin
+      content_height = @screen_height - HEADER_FOOTER_MARGIN
+      left_width = (@screen_width * LEFT_PANEL_RATIO).to_i
       right_width = @screen_width - left_width
 
       # adjust so right panel doesn't overflow into left panel
@@ -112,14 +141,14 @@ module Beniya
       end
 
       # abbreviate if path is too long
-      if header.length > @screen_width - 2
+      if header.length > @screen_width - HEADER_PADDING
         if @keybind_handler.filter_active?
           # prioritize showing filter when active
           filter_text = " [Filter: #{@keybind_handler.filter_query}]"
-          base_length = @screen_width - filter_text.length - 15
+          base_length = @screen_width - filter_text.length - FILTER_TEXT_RESERVED
           header = "📁 beniya - ...#{current_path[-base_length..-1]}#{filter_text}"
         else
-          header = "📁 beniya - ...#{current_path[-(@screen_width - 15)..-1]}"
+          header = "📁 beniya - ...#{current_path[-(@screen_width - FILTER_TEXT_RESERVED)..-1]}"
         end
       end
 
@@ -143,15 +172,15 @@ module Beniya
       end
       
       # 長すぎる場合は省略
-      if base_info.length > @screen_width - 2
+      if base_info.length > @screen_width - HEADER_PADDING
         if base_info.include?(" | Selected:")
           selected_part = base_info.split(" | Selected:").last
-          available_length = @screen_width - 20 - " | Selected:#{selected_part}".length
+          available_length = @screen_width - BASE_INFO_RESERVED_WIDTH - " | Selected:#{selected_part}".length
         else
-          available_length = @screen_width - 20
+          available_length = @screen_width - BASE_INFO_RESERVED_WIDTH
         end
         
-        if available_length > 10
+        if available_length > BASE_INFO_MIN_WIDTH
           # パスの最後の部分を表示
           dir_part = base_info.split(": ").last.split(" | ").first
           short_base_dir = "...#{dir_part[-available_length..-1]}"
@@ -170,7 +199,7 @@ module Beniya
 
       (0...height).each do |i|
         entry_index = start_index + i
-        line_num = i + 3 # skip header (2 lines)
+        line_num = i + CONTENT_START_LINE
 
         print "\e[#{line_num};1H" # set cursor position
 
@@ -181,7 +210,7 @@ module Beniya
           draw_entry_line(entry, width, is_selected)
         else
           # 左ペイン専用の安全な幅で空行を出力
-          safe_width = [width - 1, @screen_width / 2 - 1].min
+          safe_width = [width - CURSOR_OFFSET, (@screen_width * LEFT_PANEL_RATIO).to_i - CURSOR_OFFSET].min
           print ' ' * safe_width
         end
       end
@@ -192,14 +221,14 @@ module Beniya
       icon, color = get_entry_display_info(entry)
 
       # 左ペイン専用の安全な幅を計算（右ペインにはみ出さないよう）
-      safe_width = [width - 1, @screen_width / 2 - 1].min
+      safe_width = [width - CURSOR_OFFSET, (@screen_width * LEFT_PANEL_RATIO).to_i - CURSOR_OFFSET].min
 
       # 選択マークの追加
       selection_mark = @keybind_handler.is_selected?(entry[:name]) ? "✓ " : "  "
 
       # ファイル名（必要に応じて切り詰め）
       name = entry[:name]
-      max_name_length = safe_width - 12 # アイコン、選択マーク、サイズ情報分を除く
+      max_name_length = safe_width - ICON_SIZE_PADDING
       name = name[0...max_name_length - 3] + '...' if max_name_length > 0 && name.length > max_name_length
 
       # サイズ情報
@@ -260,22 +289,22 @@ module Beniya
     def format_size(size)
       return '      ' if size == 0
 
-      if size < 1024
+      if size < KILOBYTE
         "#{size}B".rjust(6)
-      elsif size < 1024 * 1024
-        "#{(size / 1024.0).round(1)}K".rjust(6)
-      elsif size < 1024 * 1024 * 1024
-        "#{(size / (1024.0 * 1024)).round(1)}M".rjust(6)
+      elsif size < MEGABYTE
+        "#{(size / KILOBYTE.to_f).round(1)}K".rjust(6)
+      elsif size < GIGABYTE
+        "#{(size / MEGABYTE.to_f).round(1)}M".rjust(6)
       else
-        "#{(size / (1024.0 * 1024 * 1024)).round(1)}G".rjust(6)
+        "#{(size / GIGABYTE.to_f).round(1)}G".rjust(6)
       end
     end
 
     def draw_file_preview(selected_entry, width, height, left_offset)
       (0...height).each do |i|
-        line_num = i + 3 # skip header (2 lines)
+        line_num = i + CONTENT_START_LINE
         # カーソル位置を左パネルの右端に設定
-        cursor_position = left_offset + 1
+        cursor_position = left_offset + CURSOR_OFFSET
 
         # 画面の境界を厳密に計算
         max_chars_from_cursor = @screen_width - cursor_position
@@ -450,7 +479,7 @@ module Beniya
 
     def draw_footer
       # 最下行から1行上に表示してスクロールを避ける
-      footer_line = @screen_height - 1
+      footer_line = @screen_height - FOOTER_HEIGHT
       print "\e[#{footer_line};1H"
 
       if @keybind_handler.filter_active?

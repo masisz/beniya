@@ -2,6 +2,9 @@
 
 module Beniya
   class Application
+    # Error display constants
+    BACKTRACE_LINES = 5  # Number of backtrace lines to show
+
     def initialize(start_directory = Dir.pwd)
       @start_directory = File.expand_path(start_directory)
       # Load configuration including language settings
@@ -22,7 +25,7 @@ module Beniya
       puts "\n\n#{ConfigLoader.message('app.interrupted')}"
     rescue StandardError => e
       puts "\n#{ConfigLoader.message('app.error_occurred')}: #{e.message}"
-      puts e.backtrace.first(5).join("\n")
+      puts e.backtrace.first(BACKTRACE_LINES).join("\n")
     end
   end
 end

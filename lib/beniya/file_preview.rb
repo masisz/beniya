@@ -6,6 +6,13 @@ module Beniya
     DEFAULT_MAX_LINES = 50
     MAX_LINE_LENGTH = 500
 
+    # Binary detection constants
+    BINARY_SAMPLE_SIZE = 512
+    PRINTABLE_CHAR_THRESHOLD = 32
+    CONTROL_CHAR_TAB = 9
+    CONTROL_CHAR_NEWLINE = 10
+    CONTROL_CHAR_CARRIAGE_RETURN = 13
+
     def initialize
       # future: hold syntax highlight settings etc.
     end
@@ -19,7 +26,7 @@ module Beniya
 
       begin
         # binary file detection
-        sample = File.binread(file_path, [file_size, 512].min)
+        sample = File.binread(file_path, [file_size, BINARY_SAMPLE_SIZE].min)
         return binary_response(file_path) if binary_file?(sample)
 
         # process as text file
@@ -44,8 +51,9 @@ module Beniya
 
     def binary_file?(sample)
       return false if sample.empty?
-      
-      binary_chars = sample.bytes.count { |byte| byte < 32 && ![9, 10, 13].include?(byte) }
+
+      allowed_control_chars = [CONTROL_CHAR_TAB, CONTROL_CHAR_NEWLINE, CONTROL_CHAR_CARRIAGE_RETURN]
+      binary_chars = sample.bytes.count { |byte| byte < PRINTABLE_CHAR_THRESHOLD && !allowed_control_chars.include?(byte) }
       (binary_chars.to_f / sample.bytes.length) > BINARY_THRESHOLD
     end
 
