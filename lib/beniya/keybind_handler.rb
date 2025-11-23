@@ -367,10 +367,13 @@ module Beniya
     def create_file
       current_path = @directory_listing&.current_path || Dir.pwd
 
-      # ファイル名の入力を求める
+      # カーソルを画面下部に移動して入力プロンプトを表示
+      move_to_input_line
       print ConfigLoader.message('keybind.input_filename')
-      filename = STDIN.gets.chomp
-      return false if filename.empty?
+      STDOUT.flush
+
+      filename = read_line_with_escape
+      return false if filename.nil? || filename.empty?
 
       # FileOperationsを使用してファイルを作成
       result = @file_operations.create_file(current_path, filename)
@@ -395,10 +398,13 @@ module Beniya
     def create_directory
       current_path = @directory_listing&.current_path || Dir.pwd
 
-      # ディレクトリ名の入力を求める
+      # カーソルを画面下部に移動して入力プロンプトを表示
+      move_to_input_line
       print ConfigLoader.message('keybind.input_dirname')
-      dirname = STDIN.gets.chomp
-      return false if dirname.empty?
+      STDOUT.flush
+
+      dirname = read_line_with_escape
+      return false if dirname.nil? || dirname.empty?
 
       # FileOperationsを使用してディレクトリを作成
       result = @file_operations.create_directory(current_path, dirname)
@@ -764,5 +770,51 @@ module Beniya
     end
 
     private
+
+    # カーソルを画面下部の入力行に移動
+    def move_to_input_line
+      # 画面の最終行にカーソルを移動
+      # terminal_uiから画面の高さを取得できない場合は、24行目（デフォルト）を使用
+      screen_height = @terminal_ui&.instance_variable_get(:@screen_height) || 24
+      print "\e[#{screen_height};1H"  # 最終行の先頭にカーソル移動
+      print "\e[2K"  # 行全体をクリア
+    end
+
+    # Escキーでキャンセル可能な入力処理
+    # 戻り値: 入力された文字列 (Escでキャンセルした場合はnil)
+    def read_line_with_escape
+      require 'io/console'
+      input = []
+
+      loop do
+        char = STDIN.getch
+
+        case char
+        when "\e" # Escape
+          # 入力をクリア
+          print "\r" + ' ' * (input.length + 50) + "\r"
+          return nil
+        when "\r", "\n" # Enter
+          puts
+          return input.join
+        when "\u007F", "\b" # Backspace/Delete
+          unless input.empty?
+            input.pop
+            # カーソルを1つ戻して文字を消去
+            print "\b \b"
+          end
+        when "\u0003" # Ctrl+C
+          puts
+          raise Interrupt
+        else
+          # 印字可能文字のみ受け付ける
+          if char.ord >= ASCII_PRINTABLE_START && char.ord < ASCII_PRINTABLE_END ||
+             char.bytesize > MULTIBYTE_THRESHOLD # マルチバイト文字（日本語など）
+            input << char
+            print char
+          end
+        end
+      end
+    end
   end
 end

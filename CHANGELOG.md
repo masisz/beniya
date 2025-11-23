@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Escape key support for file/directory creation**: Press `Esc` to cancel file (`a`) or directory (`A`) creation prompts and return to the main view
+- **Interactive input improvements**: Backspace support and better character handling for Japanese input
+
+### Fixed
+- **Module loading order**: Fixed `LoadError` for filter_manager and related dependencies
+- **Required dependencies**: Added proper require statements for all keybind_handler dependencies
+
+### Technical Details
+- New `read_line_with_escape` method for cancelable input handling
+- Comprehensive test suite for escape key functionality
+- Support for multi-byte characters (Japanese, etc.) in filename/directory input
+
 ## [0.6.0] - 2025-01-XX
 
 ### Added
