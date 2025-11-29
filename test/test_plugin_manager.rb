@@ -216,6 +216,9 @@ class TestPluginManager < Minitest::Test
     # 警告が出力されることを確認（標準エラー出力をキャプチャ）
     _out, err = capture_io do
       Beniya::PluginManager.load_all
+      # enabled_pluginsを呼び出してプラグインのインスタンス化と警告出力をトリガー
+      Beniya::PluginManager.instance_variable_set(:@enabled_plugins, nil)
+      Beniya::PluginManager.enabled_plugins
     end
 
     # 警告メッセージが含まれることを確認

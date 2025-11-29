@@ -7,6 +7,12 @@ class TestPluginsFileOperations < Minitest::Test
   def setup
     # プラグインインスタンスを作成
     @plugin = Beniya::Plugins::FileOperations.new
+
+    # FileOperationsプラグインがPluginManagerに登録されていることを確認
+    # (他のテストでクリアされている可能性があるため)
+    unless Beniya::PluginManager.plugins.include?(Beniya::Plugins::FileOperations)
+      Beniya::PluginManager.register(Beniya::Plugins::FileOperations)
+    end
   end
 
   def test_file_operations_plugin_exists

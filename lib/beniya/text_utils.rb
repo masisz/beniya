@@ -37,20 +37,36 @@ module Beniya
     def truncate_to_width(string, max_width)
       return string if display_width(string) <= max_width
 
-      result = ''
-      current_width = 0
+      # If max_width is enough for ellipsis, truncate and add ellipsis
+      if max_width >= ELLIPSIS_MIN_WIDTH
+        result = ''
+        current_width = 0
+        target_width = max_width - ELLIPSIS_MIN_WIDTH
 
-      string.each_char do |char|
-        char_width = display_width(char)
-        break if current_width + char_width > max_width
+        string.each_char do |char|
+          char_width = display_width(char)
+          break if current_width + char_width > target_width
 
-        result += char
-        current_width += char_width
+          result += char
+          current_width += char_width
+        end
+
+        result + ELLIPSIS
+      else
+        # Not enough room for ellipsis, just truncate
+        result = ''
+        current_width = 0
+
+        string.each_char do |char|
+          char_width = display_width(char)
+          break if current_width + char_width > max_width
+
+          result += char
+          current_width += char_width
+        end
+
+        result
       end
-
-      # Add ellipsis if there's room
-      result += ELLIPSIS if max_width >= ELLIPSIS_MIN_WIDTH && current_width <= max_width - ELLIPSIS_MIN_WIDTH
-      result
     end
 
     # Pad string to target_width with spaces

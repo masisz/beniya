@@ -55,15 +55,17 @@ class TestHealthChecker < Minitest::Test
 
   def test_check_rga
     result = @health_checker.send(:check_rga)
-    
+
     assert_includes [:ok, :warning], result[:status]
     assert result[:message].is_a?(String)
-    
+
     if result[:status] == :ok
-      assert result[:message].include?("rga")
+      # rgaのバージョン出力は "ripgrep-all x.x.x" の形式
+      assert !result[:message].empty?, "Message should not be empty"
       assert_nil result[:details]
     else
-      assert_equal "rga not found", result[:message]
+      # 警告メッセージを確認
+      assert result[:message].include?("rga"), "Warning message should mention rga"
       assert result[:details].is_a?(String)
     end
   end

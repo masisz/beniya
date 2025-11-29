@@ -88,16 +88,23 @@ class TestPluginConfig < Minitest::Test
   def test_plugin_enabled_returns_false_when_explicitly_disabled
     config_content = <<~YAML
       plugins:
-        ai_helper:
+        aihelper:
           enabled: false
     YAML
 
     FileUtils.mkdir_p(File.dirname(@config_path))
     File.write(@config_path, config_content)
+
+    # 完全にクリーンな状態から読み込み
+    Beniya::PluginConfig.instance_variable_set(:@config, nil)
     Beniya::PluginConfig.load
 
-    refute Beniya::PluginConfig.plugin_enabled?("ai_helper")
-    refute Beniya::PluginConfig.plugin_enabled?("AiHelper")
+    # プラグイン名は小文字に変換されて比較されるので、どちらの形式でも同じ
+    result1 = Beniya::PluginConfig.plugin_enabled?("aihelper")
+    result2 = Beniya::PluginConfig.plugin_enabled?("AiHelper")
+
+    refute result1, "Expected aihelper to be disabled, but it was enabled"
+    refute result2, "Expected AiHelper to be disabled, but it was enabled"
   end
 
   def test_plugin_not_in_config_defaults_to_enabled

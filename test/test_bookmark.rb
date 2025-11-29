@@ -31,67 +31,78 @@ module Beniya
     end
 
     def test_add_bookmark
-      path = '/home/user/documents'
+      # 実際に存在するテスト用ディレクトリを作成
+      path = File.join(@test_config_dir, 'documents')
+      FileUtils.mkdir_p(path)
       name = 'Documents'
-      
+
       result = @bookmark.add(path, name)
-      
+
       assert result
       assert_equal 1, @bookmark.list.length
-      assert_equal path, @bookmark.list.first[:path]
+      assert_equal File.expand_path(path), @bookmark.list.first[:path]
       assert_equal name, @bookmark.list.first[:name]
     end
 
     def test_add_bookmark_with_duplicate_name
-      path1 = '/home/user/documents'
-      path2 = '/home/user/downloads'
+      # 実際に存在するテスト用ディレクトリを作成
+      path1 = File.join(@test_config_dir, 'documents')
+      path2 = File.join(@test_config_dir, 'downloads')
+      FileUtils.mkdir_p(path1)
+      FileUtils.mkdir_p(path2)
       name = 'Documents'
-      
+
       @bookmark.add(path1, name)
       result = @bookmark.add(path2, name)
-      
+
       refute result
       assert_equal 1, @bookmark.list.length
     end
 
     def test_add_bookmark_with_duplicate_path
-      path = '/home/user/documents'
+      # 実際に存在するテスト用ディレクトリを作成
+      path = File.join(@test_config_dir, 'documents')
+      FileUtils.mkdir_p(path)
       name1 = 'Documents'
       name2 = 'Docs'
-      
+
       @bookmark.add(path, name1)
       result = @bookmark.add(path, name2)
-      
+
       refute result
       assert_equal 1, @bookmark.list.length
     end
 
     def test_remove_bookmark_by_name
-      path = '/home/user/documents'
+      # 実際に存在するテスト用ディレクトリを作成
+      path = File.join(@test_config_dir, 'documents')
+      FileUtils.mkdir_p(path)
       name = 'Documents'
-      
+
       @bookmark.add(path, name)
       result = @bookmark.remove(name)
-      
+
       assert result
       assert_empty @bookmark.list
     end
 
     def test_remove_nonexistent_bookmark
       result = @bookmark.remove('NonExistent')
-      
+
       refute result
       assert_empty @bookmark.list
     end
 
     def test_get_bookmark_path
-      path = '/home/user/documents'
+      # 実際に存在するテスト用ディレクトリを作成
+      path = File.join(@test_config_dir, 'documents')
+      FileUtils.mkdir_p(path)
       name = 'Documents'
-      
+
       @bookmark.add(path, name)
       result = @bookmark.get_path(name)
-      
-      assert_equal path, result
+
+      assert_equal File.expand_path(path), result
     end
 
     def test_get_nonexistent_bookmark_path
@@ -101,53 +112,61 @@ module Beniya
     end
 
     def test_find_by_number
-      paths = ['/home/user/documents', '/home/user/downloads', '/home/user/desktop']
+      # 実際に存在するテスト用ディレクトリを作成
+      paths = {}
       names = ['Documents', 'Downloads', 'Desktop']
-      
-      paths.each_with_index do |path, index|
-        @bookmark.add(path, names[index])
+      names.each do |name|
+        path = File.join(@test_config_dir, name.downcase)
+        FileUtils.mkdir_p(path)
+        paths[name] = path
+        @bookmark.add(path, name)
       end
-      
-      # 番号は1から始まる
+
+      # 番号は1から始まる、名前順にソートされる: Desktop, Documents, Downloads
       result = @bookmark.find_by_number(1)
-      assert_equal paths[0], result[:path]
-      assert_equal names[0], result[:name]
-      
+      assert_equal File.expand_path(paths['Desktop']), result[:path]
+      assert_equal 'Desktop', result[:name]
+
       result = @bookmark.find_by_number(2)
-      assert_equal paths[1], result[:path]
-      assert_equal names[1], result[:name]
-      
+      assert_equal File.expand_path(paths['Documents']), result[:path]
+      assert_equal 'Documents', result[:name]
+
       result = @bookmark.find_by_number(3)
-      assert_equal paths[2], result[:path]
-      assert_equal names[2], result[:name]
+      assert_equal File.expand_path(paths['Downloads']), result[:path]
+      assert_equal 'Downloads', result[:name]
     end
 
     def test_find_by_invalid_number
-      @bookmark.add('/home/user/documents', 'Documents')
-      
+      # 実際に存在するテスト用ディレクトリを作成
+      path = File.join(@test_config_dir, 'documents')
+      FileUtils.mkdir_p(path)
+      @bookmark.add(path, 'Documents')
+
       result = @bookmark.find_by_number(0)
       assert_nil result
-      
+
       result = @bookmark.find_by_number(10)
       assert_nil result
-      
+
       result = @bookmark.find_by_number(-1)
       assert_nil result
     end
 
     def test_save_and_load_persistence
-      path = '/home/user/documents'
+      # 実際に存在するテスト用ディレクトリを作成
+      path = File.join(@test_config_dir, 'documents')
+      FileUtils.mkdir_p(path)
       name = 'Documents'
-      
+
       @bookmark.add(path, name)
       @bookmark.save
-      
+
       # 新しいインスタンスを作成して読み込み
       new_bookmark = Bookmark.new(@test_config_file)
       new_bookmark.load
-      
+
       assert_equal 1, new_bookmark.list.length
-      assert_equal path, new_bookmark.list.first[:path]
+      assert_equal File.expand_path(path), new_bookmark.list.first[:path]
       assert_equal name, new_bookmark.list.first[:name]
     end
 
@@ -172,29 +191,39 @@ module Beniya
     end
 
     def test_max_bookmarks_limit
-      # 最大9個のブックマークを追加
+      # 実際に存在するテスト用ディレクトリを作成して最大9個のブックマークを追加
       9.times do |i|
-        result = @bookmark.add("/path/#{i}", "bookmark#{i}")
+        path = File.join(@test_config_dir, "path#{i}")
+        FileUtils.mkdir_p(path)
+        result = @bookmark.add(path, "bookmark#{i}")
         assert result
       end
-      
+
       # 10個目は追加できない
-      result = @bookmark.add('/path/10', 'bookmark10')
+      path10 = File.join(@test_config_dir, 'path10')
+      FileUtils.mkdir_p(path10)
+      result = @bookmark.add(path10, 'bookmark10')
       refute result
       assert_equal 9, @bookmark.list.length
     end
 
     def test_list_returns_sorted_bookmarks
-      paths = ['/z/path', '/a/path', '/m/path']
+      # 実際に存在するテスト用ディレクトリを作成
+      paths = []
+      %w[z a m].each do |letter|
+        path = File.join(@test_config_dir, "#{letter}_path")
+        FileUtils.mkdir_p(path)
+        paths << path
+      end
       names = ['ZFolder', 'AFolder', 'MFolder']
-      
+
       # 順序バラバラで追加
       @bookmark.add(paths[0], names[0])
       @bookmark.add(paths[1], names[1])
       @bookmark.add(paths[2], names[2])
-      
+
       list = @bookmark.list
-      
+
       # 名前順でソートされている
       assert_equal 'AFolder', list[0][:name]
       assert_equal 'MFolder', list[1][:name]

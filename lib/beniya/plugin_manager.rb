@@ -53,7 +53,8 @@ module Beniya
 
       # 本体同梱プラグインを読み込む
       def load_builtin_plugins
-        builtin_plugins_dir = File.expand_path('../plugins', __dir__)
+        # plugin_manager.rbは/lib/beniya/にあるので、pluginsディレクトリは同じディレクトリ内
+        builtin_plugins_dir = File.join(__dir__, 'plugins')
         return unless Dir.exist?(builtin_plugins_dir)
 
         Dir.glob(File.join(builtin_plugins_dir, '*.rb')).sort.each do |file|
@@ -73,7 +74,7 @@ module Beniya
         Dir.glob(File.join(user_plugins_dir, '*.rb')).sort.each do |file|
           begin
             require file
-          rescue StandardError => e
+          rescue SyntaxError, StandardError => e
             warn "⚠️  Failed to load user plugin #{File.basename(file)}: #{e.message}"
           end
         end
