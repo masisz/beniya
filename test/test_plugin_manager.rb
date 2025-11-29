@@ -72,9 +72,9 @@ class TestPluginManager < Minitest::Test
     builtin_plugins_dir = File.expand_path('../../lib/beniya/plugins', __dir__)
 
     # プラグインディレクトリが存在する、または存在しない場合もエラーにならないことを確認
-    assert_nothing_raised do
-      Beniya::PluginManager.send(:load_builtin_plugins)
-    end
+    Beniya::PluginManager.send(:load_builtin_plugins)
+    # エラーが発生しなければ成功
+    assert true
   end
 
   def test_load_user_plugins_from_home_directory
@@ -106,9 +106,9 @@ class TestPluginManager < Minitest::Test
     FileUtils.rm_rf(@user_plugins_dir)
 
     # ディレクトリが存在しない場合もエラーにならない
-    assert_nothing_raised do
-      Beniya::PluginManager.send(:load_user_plugins)
-    end
+    Beniya::PluginManager.send(:load_user_plugins)
+    # エラーが発生しなければ成功
+    assert true
   end
 
   def test_load_all_loads_both_builtin_and_user_plugins
@@ -128,9 +128,9 @@ class TestPluginManager < Minitest::Test
     File.write(File.join(@user_plugins_dir, 'another_user_plugin.rb'), plugin_content)
 
     # 全プラグインを読み込み
-    assert_nothing_raised do
-      Beniya::PluginManager.load_all
-    end
+    Beniya::PluginManager.load_all
+    # エラーが発生しなければ成功
+    assert true
   end
 
   def test_enabled_plugins_returns_array_of_plugin_instances
@@ -245,9 +245,9 @@ class TestPluginManager < Minitest::Test
     File.write(File.join(@user_plugins_dir, 'broken_plugin.rb'), plugin_content)
 
     # エラーが発生してもbeniyaは起動継続する
-    assert_nothing_raised do
-      Beniya::PluginManager.load_all
-    end
+    Beniya::PluginManager.load_all
+    # エラーが発生しなければ成功
+    assert true
   end
 
   private

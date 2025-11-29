@@ -188,9 +188,8 @@ class TestPlugin < Minitest::Test
     Beniya::Plugins.const_set(:PluginWithDependencies, test_plugin)
 
     # 依存gemが満たされている場合、正常に初期化される
-    assert_nothing_raised do
-      Beniya::Plugins::PluginWithDependencies.new
-    end
+    plugin = Beniya::Plugins::PluginWithDependencies.new
+    assert_equal "PluginWithDependencies", plugin.name
   end
 
   def test_plugin_dependency_check_with_missing_gems
@@ -247,9 +246,8 @@ class TestPlugin < Minitest::Test
     assert_equal [], Beniya::Plugins::TestPluginNoDeps.required_gems
 
     # 正常に初期化される
-    assert_nothing_raised do
-      Beniya::Plugins::TestPluginNoDeps.new
-    end
+    plugin = Beniya::Plugins::TestPluginNoDeps.new
+    assert_equal "TestPlugin", plugin.name
   end
 
   private
@@ -270,8 +268,12 @@ class TestPlugin < Minitest::Test
       :PluginWithMissingDependency,
       :TestPluginNoDeps
     ].each do |class_name|
-      if Beniya::Plugins.const_defined?(class_name)
-        Beniya::Plugins.send(:remove_const, class_name)
+      begin
+        if Beniya::Plugins.const_defined?(class_name, false)
+          Beniya::Plugins.send(:remove_const, class_name)
+        end
+      rescue NameError
+        # 定数が存在しない場合は無視
       end
     end
   end

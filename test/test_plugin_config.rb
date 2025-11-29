@@ -65,10 +65,9 @@ class TestPluginConfig < Minitest::Test
     # 設定を読み込み
     Beniya::PluginConfig.load
 
-    # 設定が正しく読み込まれることを確認
-    assert_nothing_raised do
-      Beniya::PluginConfig.plugin_enabled?("fileoperations")
-    end
+    # 設定が正しく読み込まれることを確認（エラーなく実行できる）
+    result = Beniya::PluginConfig.plugin_enabled?("fileoperations")
+    assert [true, false].include?(result)
   end
 
   def test_plugin_enabled_returns_true_when_enabled
@@ -146,9 +145,7 @@ class TestPluginConfig < Minitest::Test
     File.write(@config_path, config_content)
 
     # 空のファイルでもエラーにならない
-    assert_nothing_raised do
-      Beniya::PluginConfig.load
-    end
+    Beniya::PluginConfig.load
 
     # 全プラグインが有効とみなされる
     assert Beniya::PluginConfig.plugin_enabled?("any_plugin")
@@ -164,9 +161,7 @@ class TestPluginConfig < Minitest::Test
     File.write(@config_path, config_content)
 
     # pluginsセクションがなくてもエラーにならない
-    assert_nothing_raised do
-      Beniya::PluginConfig.load
-    end
+    Beniya::PluginConfig.load
 
     # 全プラグインが有効とみなされる
     assert Beniya::PluginConfig.plugin_enabled?("any_plugin")
@@ -185,9 +180,7 @@ class TestPluginConfig < Minitest::Test
     File.write(@config_path, config_content)
 
     # 不正なYAMLでもエラーにならない（デフォルト設定にフォールバック）
-    assert_nothing_raised do
-      Beniya::PluginConfig.load
-    end
+    Beniya::PluginConfig.load
 
     # デフォルトで全プラグイン有効
     assert Beniya::PluginConfig.plugin_enabled?("any_plugin")

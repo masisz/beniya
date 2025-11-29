@@ -21,6 +21,11 @@ require_relative "beniya/application"
 require_relative "beniya/file_opener"
 require_relative "beniya/health_checker"
 
+# プラグインシステム
+require_relative "beniya/plugin_config"
+require_relative "beniya/plugin"
+require_relative "beniya/plugin_manager"
+
 module Beniya
   class Error < StandardError; end
 end

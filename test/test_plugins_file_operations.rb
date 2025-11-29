@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'beniya/plugins/file_operations'
 
 class TestPluginsFileOperations < Minitest::Test
   def setup
@@ -61,27 +62,27 @@ class TestPluginsFileOperations < Minitest::Test
     commands = @plugin.commands
 
     # copyコマンドが呼び出し可能であることを確認
-    assert_nothing_raised do
-      commands[:copy].call
-    end
+    result = commands[:copy].call
+    # エラーが発生しなければ成功
+    assert true
   end
 
   def test_move_command_is_callable
     commands = @plugin.commands
 
     # moveコマンドが呼び出し可能であることを確認
-    assert_nothing_raised do
-      commands[:move].call
-    end
+    result = commands[:move].call
+    # エラーが発生しなければ成功
+    assert true
   end
 
   def test_delete_command_is_callable
     commands = @plugin.commands
 
     # deleteコマンドが呼び出し可能であることを確認
-    assert_nothing_raised do
-      commands[:delete].call
-    end
+    result = commands[:delete].call
+    # エラーが発生しなければ成功
+    assert true
   end
 
   def test_copy_command_returns_string_or_nil
@@ -113,9 +114,8 @@ class TestPluginsFileOperations < Minitest::Test
 
   def test_plugin_can_be_instantiated_without_errors
     # 外部gem依存がないので、エラーなくインスタンス化できる
-    assert_nothing_raised do
-      Beniya::Plugins::FileOperations.new
-    end
+    plugin = Beniya::Plugins::FileOperations.new
+    assert_equal "FileOperations", plugin.name
   end
 
   def test_plugin_is_registered_in_plugin_manager
