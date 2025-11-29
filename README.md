@@ -12,6 +12,7 @@ beniyaは、Yaziにインスパイアされたターミナル上で動作する�
 
 - **軽量でシンプル**: Rubyで書かれた軽量なファイルマネージャー
 - **直感的な操作**: Vimライクなキーバインド
+- **プラグインシステム**: 拡張可能なプラグインアーキテクチャ
 - **ファイルプレビュー**: テキストファイルの内容をその場で確認
 - **ファイル選択・操作**: 複数ファイルの選択、移動、コピー、削除が可能
 - **ベースディレクトリ操作**: 起動ディレクトリへの一括ファイル移動・コピー
@@ -350,6 +351,167 @@ COLORS = {
 - `executable`: 実行可能ファイルの色
 - `selected`: 選択中の項目の色
 - `preview`: プレビューパネルの色
+
+## プラグインシステム
+
+beniyaは拡張可能なプラグインシステムを備えており、独自の機能を簡単に追加できます。
+
+### プラグインの配置場所
+
+#### 1. 本体同梱プラグイン
+```
+lib/beniya/plugins/*.rb
+```
+beniyaに標準で含まれるプラグイン。外部gem依存なしの基本機能を提供。
+
+#### 2. ユーザープラグイン
+```
+~/.beniya/plugins/*.rb
+```
+ユーザーが自由に追加できるプラグイン。GitHub GistやrawURLから取得可能。
+
+### プラグインの作成方法
+
+#### シンプルなプラグイン例
+
+```ruby
+# ~/.beniya/plugins/hello.rb
+module Beniya
+  module Plugins
+    class Hello < Plugin
+      def name
+        'Hello'
+      end
+
+      def description
+        'シンプルな挨拶プラグイン'
+      end
+
+      def commands
+        {
+          hello: method(:say_hello)
+        }
+      end
+
+      private
+
+      def say_hello
+        puts "Hello from beniya!"
+      end
+    end
+  end
+end
+```
+
+#### 外部gemに依存するプラグイン例
+
+```ruby
+# ~/.beniya/plugins/ai_helper.rb
+module Beniya
+  module Plugins
+    class AiHelper < Plugin
+      requires 'anthropic'  # 依存gem宣言
+
+      def name
+        'AiHelper'
+      end
+
+      def description
+        'Claude APIを使ったAIアシスタント'
+      end
+
+      def commands
+        {
+          ai: method(:ask_ai)
+        }
+      end
+
+      def initialize
+        super  # 依存チェック実行
+        @client = Anthropic::Client.new(
+          api_key: ENV['ANTHROPIC_API_KEY']
+        )
+      end
+
+      private
+
+      def ask_ai(question)
+        # AI処理
+      end
+    end
+  end
+end
+```
+
+### プラグインの管理
+
+#### プラグインの有効/無効設定
+
+`~/.beniya/config.yml`でプラグインの有効/無効を制御できます：
+
+```yaml
+plugins:
+  fileoperations:
+    enabled: true
+  ai_helper:
+    enabled: true
+  my_custom:
+    enabled: false
+```
+
+#### デフォルト動作
+
+- `config.yml`が存在しない → 全プラグイン有効
+- プラグインの設定がない → 有効とみなす
+- `enabled: false`が明示的に設定されている → 無効
+
+### プラグインの配布方法
+
+#### GitHub Gistで共有
+
+```bash
+# プラグイン作者
+1. GitHub Gistに.rbファイルをアップロード
+2. Raw URLをユーザーに共有
+
+# ユーザー
+$ mkdir -p ~/.beniya/plugins
+$ curl -o ~/.beniya/plugins/my_plugin.rb [RAW_URL]
+$ beniya
+✓ my_plugin 読み込み完了
+```
+
+#### GitHubリポジトリで共有
+
+```bash
+# プラグイン作者
+beniya-plugins/
+  ├── plugin1.rb
+  └── plugin2.rb
+
+# ユーザー
+$ curl -o ~/.beniya/plugins/plugin1.rb https://raw.githubusercontent.com/user/beniya-plugins/main/plugin1.rb
+```
+
+### プラグインの主要機能
+
+#### 必須メソッド
+
+- `name`: プラグイン名（必須）
+- `description`: プラグインの説明（オプション、デフォルト: ""）
+- `version`: プラグインのバージョン（オプション、デフォルト: "1.0.0"）
+- `commands`: コマンド定義（オプション、デフォルト: {}）
+
+#### 依存gem管理
+
+- `requires 'gem_name'`: 依存gemを宣言
+- 依存gemが不足している場合、警告を表示してプラグインを無効化
+- beniya本体は正常に起動継続
+
+#### 自動登録機能
+
+- `Plugin`クラスを継承すると自動的に`PluginManager`に登録
+- 複雑な登録処理は不要
 
 ## 開発
 

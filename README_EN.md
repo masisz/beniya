@@ -12,6 +12,7 @@ beniya is a terminal-based file manager inspired by Yazi. It's implemented in Ru
 
 - **Lightweight & Simple**: A lightweight file manager written in Ruby
 - **Intuitive Operation**: Vim-like key bindings
+- **Plugin System**: Extensible plugin architecture
 - **File Preview**: View text file contents on the fly
 - **File Selection & Operations**: Select multiple files, move, copy, and delete
 - **Base Directory Operations**: Batch file operations to startup directory
@@ -351,6 +352,167 @@ COLORS = {
 - `executable`: Executable file color
 - `selected`: Selected item color
 - `preview`: Preview panel color
+
+## Plugin System
+
+beniya features an extensible plugin system that allows you to easily add custom functionality.
+
+### Plugin Locations
+
+#### 1. Built-in Plugins
+```
+lib/beniya/plugins/*.rb
+```
+Plugins included with beniya by default. Provides basic functionality without external gem dependencies.
+
+#### 2. User Plugins
+```
+~/.beniya/plugins/*.rb
+```
+Plugins you can freely add. Can be obtained from GitHub Gist or raw URLs.
+
+### Creating Plugins
+
+#### Simple Plugin Example
+
+```ruby
+# ~/.beniya/plugins/hello.rb
+module Beniya
+  module Plugins
+    class Hello < Plugin
+      def name
+        'Hello'
+      end
+
+      def description
+        'Simple greeting plugin'
+      end
+
+      def commands
+        {
+          hello: method(:say_hello)
+        }
+      end
+
+      private
+
+      def say_hello
+        puts "Hello from beniya!"
+      end
+    end
+  end
+end
+```
+
+#### Plugin with External Gem Dependencies
+
+```ruby
+# ~/.beniya/plugins/ai_helper.rb
+module Beniya
+  module Plugins
+    class AiHelper < Plugin
+      requires 'anthropic'  # Declare gem dependency
+
+      def name
+        'AiHelper'
+      end
+
+      def description
+        'AI assistant using Claude API'
+      end
+
+      def commands
+        {
+          ai: method(:ask_ai)
+        }
+      end
+
+      def initialize
+        super  # Run dependency check
+        @client = Anthropic::Client.new(
+          api_key: ENV['ANTHROPIC_API_KEY']
+        )
+      end
+
+      private
+
+      def ask_ai(question)
+        # AI processing
+      end
+    end
+  end
+end
+```
+
+### Plugin Management
+
+#### Enable/Disable Plugins
+
+You can control plugin activation in `~/.beniya/config.yml`:
+
+```yaml
+plugins:
+  fileoperations:
+    enabled: true
+  ai_helper:
+    enabled: true
+  my_custom:
+    enabled: false
+```
+
+#### Default Behavior
+
+- No `config.yml` → All plugins enabled
+- Plugin not in config → Enabled by default
+- `enabled: false` explicitly set → Disabled
+
+### Plugin Distribution
+
+#### Share via GitHub Gist
+
+```bash
+# Plugin author
+1. Upload .rb file to GitHub Gist
+2. Share Raw URL with users
+
+# User
+$ mkdir -p ~/.beniya/plugins
+$ curl -o ~/.beniya/plugins/my_plugin.rb [RAW_URL]
+$ beniya
+✓ my_plugin loaded successfully
+```
+
+#### Share via GitHub Repository
+
+```bash
+# Plugin author
+beniya-plugins/
+  ├── plugin1.rb
+  └── plugin2.rb
+
+# User
+$ curl -o ~/.beniya/plugins/plugin1.rb https://raw.githubusercontent.com/user/beniya-plugins/main/plugin1.rb
+```
+
+### Plugin Key Features
+
+#### Required Methods
+
+- `name`: Plugin name (required)
+- `description`: Plugin description (optional, default: "")
+- `version`: Plugin version (optional, default: "1.0.0")
+- `commands`: Command definitions (optional, default: {})
+
+#### Dependency Management
+
+- `requires 'gem_name'`: Declare gem dependencies
+- If dependencies are missing, displays warning and disables plugin
+- beniya continues to start normally
+
+#### Auto-registration
+
+- Inheriting from `Plugin` class automatically registers with `PluginManager`
+- No complex registration process needed
 
 ## Development
 
