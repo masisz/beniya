@@ -20,6 +20,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive test suite for escape key functionality
 - Support for multi-byte characters (Japanese, etc.) in filename/directory input
 
+## [0.7.0] - 2024-11-29
+
+### Added
+- **🔌 Plugin System**: Complete extensible plugin architecture for beniya
+- **Plugin Base Class**: Simple API for creating plugins with automatic registration
+- **Plugin Manager**: Automatic plugin discovery and loading from built-in and user directories
+- **Plugin Configuration**: Enable/disable plugins via `~/.beniya/config.yml`
+- **Dependency Management**: Plugins can declare gem dependencies with automatic checking
+- **Built-in Plugins**: FileOperations plugin for basic file operations
+- **Error Handling**: Graceful degradation when plugin dependencies are missing
+- **Plugin Distribution**: Support for GitHub Gist and repository-based plugin sharing
+
+### Changed
+- **Documentation Updates**: Comprehensive plugin system documentation in README.md and README_EN.md
+- **Test Suite**: Complete TDD implementation with full test coverage for plugin system
+
+### Technical Details
+- New `Plugin` base class with auto-registration mechanism
+- New `PluginManager` for plugin lifecycle management
+- New `PluginConfig` for configuration file handling
+- Plugin directory structure: `lib/beniya/plugins/` and `~/.beniya/plugins/`
+- Case-insensitive plugin name matching in configuration
+- **Detailed changelog**: [CHANGELOG_v0.7.0.md](./CHANGELOG_v0.7.0.md)
+
 ## [0.6.0] - 2025-01-XX
 
 ### Added
