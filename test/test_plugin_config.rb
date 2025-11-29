@@ -1,0 +1,246 @@
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class TestPluginConfig < Minitest::Test
+  def setup
+    # テスト用の一時ディレクトリを作成
+    @temp_dir = Dir.mktmpdir
+    @config_path = File.join(@temp_dir, '.beniya', 'config.yml')
+
+    # 元のHOME環境変数を保存
+    @original_home = ENV['HOME']
+    ENV['HOME'] = @temp_dir
+
+    # Configの内部状態をクリア
+    Beniya::PluginConfig.instance_variable_set(:@config, nil)
+  end
+
+  def teardown
+    # HOME環境変数を復元
+    ENV['HOME'] = @original_home
+
+    # 一時ディレクトリを削除
+    FileUtils.rm_rf(@temp_dir)
+
+    # Configの内部状態をクリア
+    Beniya::PluginConfig.instance_variable_set(:@config, nil)
+  end
+
+  def test_plugin_config_class_exists
+    assert defined?(Beniya::PluginConfig), "Beniya::PluginConfig クラスが定義されていません"
+  end
+
+  def test_load_method_exists
+    assert_respond_to Beniya::PluginConfig, :load
+  end
+
+  def test_plugin_enabled_method_exists
+    assert_respond_to Beniya::PluginConfig, :plugin_enabled?
+  end
+
+  def test_config_file_not_exist_defaults_to_all_enabled
+    # config.ymlが存在しない状態で読み込み
+    Beniya::PluginConfig.load
+
+    # 全てのプラグインが有効とみなされる
+    assert Beniya::PluginConfig.plugin_enabled?("any_plugin")
+    assert Beniya::PluginConfig.plugin_enabled?("another_plugin")
+    assert Beniya::PluginConfig.plugin_enabled?("FileOperations")
+  end
+
+  def test_load_config_from_yaml_file
+    # config.ymlを作成
+    config_content = <<~YAML
+      plugins:
+        fileoperations:
+          enabled: true
+        ai_helper:
+          enabled: false
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+
+    # 設定を読み込み
+    Beniya::PluginConfig.load
+
+    # 設定が正しく読み込まれることを確認
+    assert_nothing_raised do
+      Beniya::PluginConfig.plugin_enabled?("fileoperations")
+    end
+  end
+
+  def test_plugin_enabled_returns_true_when_enabled
+    config_content = <<~YAML
+      plugins:
+        fileoperations:
+          enabled: true
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.load
+
+    assert Beniya::PluginConfig.plugin_enabled?("fileoperations")
+    assert Beniya::PluginConfig.plugin_enabled?("FileOperations")
+  end
+
+  def test_plugin_enabled_returns_false_when_explicitly_disabled
+    config_content = <<~YAML
+      plugins:
+        ai_helper:
+          enabled: false
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.load
+
+    refute Beniya::PluginConfig.plugin_enabled?("ai_helper")
+    refute Beniya::PluginConfig.plugin_enabled?("AiHelper")
+  end
+
+  def test_plugin_not_in_config_defaults_to_enabled
+    config_content = <<~YAML
+      plugins:
+        fileoperations:
+          enabled: true
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.load
+
+    # 設定にないプラグインは有効とみなされる
+    assert Beniya::PluginConfig.plugin_enabled?("unlisted_plugin")
+  end
+
+  def test_plugin_name_case_insensitive
+    config_content = <<~YAML
+      plugins:
+        fileoperations:
+          enabled: true
+        aihelper:
+          enabled: false
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.load
+
+    # 大文字小文字を区別しない
+    assert Beniya::PluginConfig.plugin_enabled?("FileOperations")
+    assert Beniya::PluginConfig.plugin_enabled?("fileoperations")
+    assert Beniya::PluginConfig.plugin_enabled?("FILEOPERATIONS")
+
+    refute Beniya::PluginConfig.plugin_enabled?("AiHelper")
+    refute Beniya::PluginConfig.plugin_enabled?("aihelper")
+    refute Beniya::PluginConfig.plugin_enabled?("AIHELPER")
+  end
+
+  def test_load_handles_empty_config_file
+    config_content = ""
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+
+    # 空のファイルでもエラーにならない
+    assert_nothing_raised do
+      Beniya::PluginConfig.load
+    end
+
+    # 全プラグインが有効とみなされる
+    assert Beniya::PluginConfig.plugin_enabled?("any_plugin")
+  end
+
+  def test_load_handles_config_without_plugins_section
+    config_content = <<~YAML
+      other_settings:
+        some_value: 123
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+
+    # pluginsセクションがなくてもエラーにならない
+    assert_nothing_raised do
+      Beniya::PluginConfig.load
+    end
+
+    # 全プラグインが有効とみなされる
+    assert Beniya::PluginConfig.plugin_enabled?("any_plugin")
+  end
+
+  def test_load_handles_malformed_yaml
+    config_content = <<~YAML
+      plugins:
+        fileoperations:
+          enabled: true
+        broken yaml here
+          invalid: [
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+
+    # 不正なYAMLでもエラーにならない（デフォルト設定にフォールバック）
+    assert_nothing_raised do
+      Beniya::PluginConfig.load
+    end
+
+    # デフォルトで全プラグイン有効
+    assert Beniya::PluginConfig.plugin_enabled?("any_plugin")
+  end
+
+  def test_config_with_multiple_plugins
+    config_content = <<~YAML
+      plugins:
+        plugin1:
+          enabled: true
+        plugin2:
+          enabled: true
+        plugin3:
+          enabled: false
+        plugin4:
+          enabled: false
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.load
+
+    assert Beniya::PluginConfig.plugin_enabled?("plugin1")
+    assert Beniya::PluginConfig.plugin_enabled?("plugin2")
+    refute Beniya::PluginConfig.plugin_enabled?("plugin3")
+    refute Beniya::PluginConfig.plugin_enabled?("plugin4")
+  end
+
+  def test_reload_config_after_file_change
+    # 最初の設定
+    config_content = <<~YAML
+      plugins:
+        test_plugin:
+          enabled: true
+    YAML
+
+    FileUtils.mkdir_p(File.dirname(@config_path))
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.load
+
+    assert Beniya::PluginConfig.plugin_enabled?("test_plugin")
+
+    # 設定ファイルを変更
+    config_content = <<~YAML
+      plugins:
+        test_plugin:
+          enabled: false
+    YAML
+
+    File.write(@config_path, config_content)
+    Beniya::PluginConfig.instance_variable_set(:@config, nil)
+    Beniya::PluginConfig.load
+
+    refute Beniya::PluginConfig.plugin_enabled?("test_plugin")
+  end
+end
