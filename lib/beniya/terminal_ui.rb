@@ -569,6 +569,9 @@ module Beniya
       end
     end
 
+    # コマンドモード関連のメソッドは public にする
+    public
+
     # コマンドモードを起動
     def activate_command_mode
       @command_mode_active = true
