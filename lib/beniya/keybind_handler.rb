@@ -136,6 +136,8 @@ module Beniya
         show_zoxide_menu
       when '1', '2', '3', '4', '5', '6', '7', '8', '9'  # number keys - go to bookmark
         goto_bookmark(key.to_i)
+      when ':'  # : - command mode
+        activate_command_mode
       else
         false # #{ConfigLoader.message('keybind.invalid_key')}
       end
@@ -767,6 +769,12 @@ module Beniya
         @terminal_ui&.refresh_display
         false
       end
+    end
+
+    # コマンドモードを起動
+    def activate_command_mode
+      @terminal_ui&.activate_command_mode
+      true
     end
 
     private

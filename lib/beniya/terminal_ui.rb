@@ -43,6 +43,9 @@ module Beniya
         @screen_height = DEFAULT_SCREEN_HEIGHT
       end
       @running = false
+      @command_mode_active = false
+      @command_input = ""
+      @command_mode = CommandMode.new
     end
 
     def start(directory_listing, keybind_handler, file_preview)
@@ -126,8 +129,16 @@ module Beniya
       # footer
       draw_footer
 
-      # move cursor to invisible position
-      print "\e[#{@screen_height};#{@screen_width}H"
+      # コマンド実行結果を表示
+      draw_command_result
+
+      # コマンドモードがアクティブな場合はコマンド入力欄を表示
+      if @command_mode_active
+        draw_command_input
+      else
+        # move cursor to invisible position
+        print "\e[#{@screen_height};#{@screen_width}H"
+      end
     end
 
     def draw_header
@@ -543,12 +554,96 @@ module Beniya
         end
       end
 
+      # コマンドモードがアクティブな場合は、コマンド入力を処理
+      if @command_mode_active
+        handle_command_input(input)
+        return
+      end
+
       # キーバインドハンドラーに処理を委譲
       result = @keybind_handler.handle_key(input)
 
       # 終了処理（qキーのみ）
       if input == 'q'
         @running = false
+      end
+    end
+
+    # コマンドモードを起動
+    def activate_command_mode
+      @command_mode_active = true
+      @command_input = ""
+    end
+
+    # コマンドモードを終了
+    def deactivate_command_mode
+      @command_mode_active = false
+      @command_input = ""
+    end
+
+    # コマンドモードがアクティブかどうか
+    def command_mode_active?
+      @command_mode_active
+    end
+
+    # コマンド入力を処理
+    def handle_command_input(input)
+      case input
+      when "\r", "\n"
+        # Enter キーでコマンドを実行
+        execute_command(@command_input)
+        deactivate_command_mode
+      when "\e"
+        # Escape キーでコマンドモードをキャンセル
+        deactivate_command_mode
+      when "\u007F", "\b"
+        # Backspace
+        @command_input.chop! unless @command_input.empty?
+      else
+        # 通常の文字を追加
+        @command_input += input if input.length == 1
+      end
+    end
+
+    # コマンドを実行
+    def execute_command(command_string)
+      return if command_string.nil? || command_string.empty?
+
+      result = @command_mode.execute(command_string)
+
+      # コマンド実行結果を表示（画面下部に一時的に表示）
+      if result
+        @command_result = result
+        @command_result_time = Time.now
+      end
+    end
+
+    # コマンド入力欄を描画
+    def draw_command_input
+      # 画面最下部に描画
+      print "\e[#{@screen_height};1H"
+      print "\e[2K"  # 行をクリア
+
+      # コマンドプロンプトと入力を表示
+      prompt = ":"
+      print "#{prompt}#{@command_input}"
+
+      # カーソルを表示
+      print "\e[?25h"
+    end
+
+    # コマンド実行結果を描画
+    def draw_command_result
+      return unless @command_result && @command_result_time
+
+      # 3秒間だけ表示
+      if Time.now - @command_result_time < 3
+        print "\e[#{@screen_height - 1};1H"
+        print "\e[2K"  # 行をクリア
+        print @command_result
+      else
+        @command_result = nil
+        @command_result_time = nil
       end
     end
   end

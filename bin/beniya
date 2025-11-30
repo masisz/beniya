@@ -3,6 +3,9 @@
 
 require_relative '../lib/beniya'
 
+# プラグインを読み込む
+Beniya::PluginManager.load_all
+
 # コマンドライン引数の処理
 if ARGV.include?('--check-health') || ARGV.include?('-c')
   # ヘルスチェック実行

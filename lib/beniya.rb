@@ -25,6 +25,7 @@ require_relative "beniya/health_checker"
 require_relative "beniya/plugin_config"
 require_relative "beniya/plugin"
 require_relative "beniya/plugin_manager"
+require_relative "beniya/command_mode"
 
 module Beniya
   class Error < StandardError; end
