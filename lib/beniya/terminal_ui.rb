@@ -46,6 +46,8 @@ module Beniya
       @command_mode_active = false
       @command_input = ""
       @command_mode = CommandMode.new
+      @dialog_renderer = DialogRenderer.new
+      @command_mode_ui = CommandModeUI.new(@command_mode, @dialog_renderer)
     end
 
     def start(directory_listing, keybind_handler, file_preview)
@@ -599,6 +601,9 @@ module Beniya
       when "\e"
         # Escape キーでコマンドモードをキャンセル
         deactivate_command_mode
+      when "\t"
+        # Tab キーで補完
+        @command_input = @command_mode_ui.complete_command(@command_input)
       when "\u007F", "\b"
         # Backspace
         @command_input.chop! unless @command_input.empty?
@@ -614,11 +619,11 @@ module Beniya
 
       result = @command_mode.execute(command_string)
 
-      # コマンド実行結果を表示（画面下部に一時的に表示）
-      if result
-        @command_result = result
-        @command_result_time = Time.now
-      end
+      # コマンド実行結果をフローティングウィンドウで表示
+      @command_mode_ui.show_result(result) if result
+
+      # 画面を再描画
+      draw
     end
 
     # コマンド入力欄を描画

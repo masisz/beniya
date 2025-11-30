@@ -188,7 +188,9 @@ class TestCommandModeUI < Minitest::Test
 
     @dialog_renderer.stub :draw_floating_window, ->(x, y, w, h, title, content, opts) {
       draw_called = true
-      assert_equal 3, content.select { |line| !line.empty? }.length
+      # 空行 + Line1 + Line2 + Line3 + 空行 + "Press any key to close"
+      # 空行でない行は 4行（結果3行 + プロンプト1行）
+      assert_equal 4, content.select { |line| !line.empty? }.length
     } do
       @dialog_renderer.stub :clear_area, ->(*) {} do
         STDIN.stub :getch, "\r" do

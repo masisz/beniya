@@ -26,6 +26,7 @@ require_relative "beniya/plugin_config"
 require_relative "beniya/plugin"
 require_relative "beniya/plugin_manager"
 require_relative "beniya/command_mode"
+require_relative "beniya/command_mode_ui"
 
 module Beniya
   class Error < StandardError; end
