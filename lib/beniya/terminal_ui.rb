@@ -623,7 +623,7 @@ module Beniya
       @command_mode_ui.show_result(result) if result
 
       # 画面を再描画
-      draw
+      draw_screen
     end
 
     # コマンド入力欄を描画
