@@ -224,6 +224,74 @@ class TestCommandModeUI < Minitest::Test
     refute draw_called, "空文字列の場合は draw_floating_window を呼んではいけません"
   end
 
+  # === コマンド入力フローティングウィンドウのテスト ===
+
+  def test_show_input_prompt_basic
+    # 基本的な入力プロンプトの表示
+    input = "hello"
+    draw_called = false
+
+    @dialog_renderer.stub :draw_floating_window, ->(x, y, w, h, title, content, opts) {
+      draw_called = true
+      assert_equal "コマンドモード", title
+      assert_includes content.join("\n"), input
+    } do
+      @command_mode_ui.show_input_prompt(input)
+    end
+
+    assert draw_called, "draw_floating_window が呼ばれていません"
+  end
+
+  def test_show_input_prompt_empty_input
+    # 空の入力の場合
+    input = ""
+    draw_called = false
+
+    @dialog_renderer.stub :draw_floating_window, ->(x, y, w, h, title, content, opts) {
+      draw_called = true
+      assert_includes content.join("\n"), ":"
+    } do
+      @command_mode_ui.show_input_prompt(input)
+    end
+
+    assert draw_called, "draw_floating_window が呼ばれていません"
+  end
+
+  def test_show_input_prompt_with_suggestions
+    # 補完候補付きの入力プロンプト
+    input = "he"
+    suggestions = ["hello", "help", "health"]
+    draw_called = false
+
+    @dialog_renderer.stub :draw_floating_window, ->(x, y, w, h, title, content, opts) {
+      draw_called = true
+      # 補完候補が表示されることを確認
+      content_text = content.join("\n")
+      suggestions.each do |suggestion|
+        assert_includes content_text, suggestion
+      end
+    } do
+      @command_mode_ui.show_input_prompt(input, suggestions)
+    end
+
+    assert draw_called, "draw_floating_window が呼ばれていません"
+  end
+
+  def test_show_input_prompt_color
+    # プロンプトの色が青であることを確認
+    input = "test"
+    draw_called = false
+
+    @dialog_renderer.stub :draw_floating_window, ->(x, y, w, h, title, content, opts) {
+      draw_called = true
+      assert_equal "\e[34m", opts[:border_color]  # Blue
+    } do
+      @command_mode_ui.show_input_prompt(input)
+    end
+
+    assert draw_called, "draw_floating_window が呼ばれていません"
+  end
+
   # === 統合テスト ===
 
   def test_prompt_command_with_autocomplete
