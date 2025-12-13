@@ -131,12 +131,12 @@ module Beniya
       # footer
       draw_footer
 
-      # コマンド実行結果を表示
-      draw_command_result
-
-      # コマンドモードがアクティブな場合はコマンド入力欄を表示
+      # コマンドモードがアクティブな場合はコマンド入力ウィンドウを表示
       if @command_mode_active
-        draw_command_input
+        # 補完候補を取得
+        suggestions = @command_mode_ui.autocomplete(@command_input)
+        # フローティングウィンドウで表示
+        @command_mode_ui.show_input_prompt(@command_input, suggestions)
       else
         # move cursor to invisible position
         print "\e[#{@screen_height};#{@screen_width}H"
@@ -624,35 +624,6 @@ module Beniya
 
       # 画面を再描画
       draw_screen
-    end
-
-    # コマンド入力欄を描画
-    def draw_command_input
-      # 画面最下部に描画
-      print "\e[#{@screen_height};1H"
-      print "\e[2K"  # 行をクリア
-
-      # コマンドプロンプトと入力を表示
-      prompt = ":"
-      print "#{prompt}#{@command_input}"
-
-      # カーソルを表示
-      print "\e[?25h"
-    end
-
-    # コマンド実行結果を描画
-    def draw_command_result
-      return unless @command_result && @command_result_time
-
-      # 3秒間だけ表示
-      if Time.now - @command_result_time < 3
-        print "\e[#{@screen_height - 1};1H"
-        print "\e[2K"  # 行をクリア
-        print @command_result
-      else
-        @command_result = nil
-        @command_result_time = nil
-      end
     end
   end
 end

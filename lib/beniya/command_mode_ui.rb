@@ -40,6 +40,52 @@ module Beniya
       find_common_prefix(suggestions)
     end
 
+    # コマンド入力プロンプトをフローティングウィンドウで表示
+    # @param input [String] 現在の入力文字列
+    # @param suggestions [Array<String>] 補完候補（オプション）
+    def show_input_prompt(input, suggestions = [])
+      # タイトル
+      title = "コマンドモード"
+
+      # コンテンツ行を構築
+      content_lines = [""]
+      content_lines << ":#{input}█"  # カーソルを█で表現
+      content_lines << ""
+
+      # 補完候補がある場合は表示
+      unless suggestions.empty?
+        content_lines << "補完候補:"
+        suggestions.each do |suggestion|
+          content_lines << "  #{suggestion}"
+        end
+        content_lines << ""
+      end
+
+      content_lines << "Tab: 補完 | Enter: 実行 | ESC: キャンセル"
+
+      # ウィンドウの色設定（青）
+      border_color = "\e[34m"      # Blue
+      title_color = "\e[1;34m"     # Bold blue
+      content_color = "\e[37m"     # White
+
+      # ウィンドウサイズを計算
+      width, height = @dialog_renderer.calculate_dimensions(content_lines, {
+                                                               title: title,
+                                                               min_width: 50,
+                                                               max_width: 80
+                                                             })
+
+      # 中央位置を計算
+      x, y = @dialog_renderer.calculate_center(width, height)
+
+      # フローティングウィンドウを描画
+      @dialog_renderer.draw_floating_window(x, y, width, height, title, content_lines, {
+                                               border_color: border_color,
+                                               title_color: title_color,
+                                               content_color: content_color
+                                             })
+    end
+
     # コマンド実行結果をフローティングウィンドウで表示
     # @param result [String, nil] コマンド実行結果
     def show_result(result)
