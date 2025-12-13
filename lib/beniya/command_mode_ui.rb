@@ -49,7 +49,7 @@ module Beniya
 
       # コンテンツ行を構築
       content_lines = [""]
-      content_lines << "#{input}█"  # カーソルを█で表現
+      content_lines << "#{input}_"  # カーソルを_で表現
       content_lines << ""
 
       # 補完候補がある場合は表示
