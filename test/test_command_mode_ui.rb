@@ -249,7 +249,7 @@ class TestCommandModeUI < Minitest::Test
 
     @dialog_renderer.stub :draw_floating_window, ->(x, y, w, h, title, content, opts) {
       draw_called = true
-      assert_includes content.join("\n"), ":"
+      assert_includes content.join("\n"), "█"  # カーソルが表示される
     } do
       @command_mode_ui.show_input_prompt(input)
     end
