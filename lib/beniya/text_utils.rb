@@ -23,8 +23,8 @@ module Beniya
     def display_width(string)
       string.each_char.map do |char|
         case char
-        when /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\uFF00-\uFFEF]/
-          FULLWIDTH_CHAR_WIDTH  # Japanese characters (hiragana, katakana, kanji, full-width symbols)
+        when /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\uFF00-\uFFEF\u2500-\u257F\u2580-\u259F]/
+          FULLWIDTH_CHAR_WIDTH  # Japanese characters (hiragana, katakana, kanji, full-width symbols, box drawing, block elements)
         when /[\u0020-\u007E]/
           HALFWIDTH_CHAR_WIDTH  # ASCII characters
         else
