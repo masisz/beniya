@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ['masisz.1567@gmail.com']
 
   spec.summary = 'Ruby file manager'
-  spec.description = 'A terminal-based file manager inspired by Yazi, written in Ruby with plugin support'
+  spec.description = '[DEPRECATED] This project has been migrated to rufio (https://github.com/masisz/rufio). A terminal-based file manager inspired by Yazi, written in Ruby with plugin support'
   spec.homepage = 'https://github.com/masisz/beniya'
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 2.7.0'
@@ -18,6 +18,22 @@ Gem::Specification.new do |spec|
   spec.metadata['homepage_uri'] = spec.homepage
   spec.metadata['source_code_uri'] = 'https://github.com/masisz/beniya'
   spec.metadata['changelog_uri'] = 'https://github.com/masisz/beniya/blob/main/CHANGELOG.md'
+
+  spec.post_install_message = <<~MSG
+    ┌─────────────────────────────────────────────────────────────┐
+    │                                                             │
+    │  ⚠️  DEPRECATED: beniya has been migrated to rufio          │
+    │                                                             │
+    │  This project is now in maintenance mode.                   │
+    │  Please use rufio for new features and active development.  │
+    │                                                             │
+    │  Install rufio:                                             │
+    │    gem install rufio                                        │
+    │                                                             │
+    │  More info: https://github.com/masisz/rufio                 │
+    │                                                             │
+    └─────────────────────────────────────────────────────────────┘
+  MSG
 
   spec.files = Dir.chdir(__dir__) do
     `git ls-files -z`.split("\x0").reject do |f|
