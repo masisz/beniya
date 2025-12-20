@@ -20,6 +20,7 @@ require_relative "beniya/terminal_ui"
 require_relative "beniya/application"
 require_relative "beniya/file_opener"
 require_relative "beniya/health_checker"
+require_relative "beniya/deprecation_notice"
 
 # プラグインシステム
 require_relative "beniya/plugin_config"
