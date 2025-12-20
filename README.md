@@ -1,5 +1,7 @@
 # beniya
 
+> **注意**: このプロジェクトは[rufio](https://github.com/masisz/rufio)に移行しました。今後の開発・メンテナンスはrufioで行われます。beniyaは保守モードとなり、新機能の追加は行われません。
+
 Ruby製のターミナルベースファイルマネージャー
 
 **日本語** | [English](./README_EN.md)

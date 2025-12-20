@@ -1,5 +1,7 @@
 # beniya
 
+> **Notice**: This project has been migrated to [rufio](https://github.com/masisz/rufio). Future development and maintenance will be done in rufio. beniya is now in maintenance mode and no new features will be added.
+
 A terminal-based file manager written in Ruby
 
 [日本語版](./README.md) | **English**
