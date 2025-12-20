@@ -652,14 +652,23 @@ module Beniya
         }
       )
 
-      # Wait for any key press
-      $stdin.getch
+      # Force flush to ensure display
+      $stdout.flush
+
+      # Wait for any key press (using IO.console for better compatibility)
+      require 'io/console'
+      IO.console.getch
 
       # Mark as shown
       notice.mark_as_shown
 
       # Clear screen for main display
       print "\e[2J\e[H"
+    rescue StandardError => e
+      # If notice display fails, mark it as shown to avoid repeated errors
+      notice.mark_as_shown if notice
+      # Log error to stderr for debugging
+      $stderr.puts "Warning: Failed to display deprecation notice: #{e.message}"
     end
   end
 end
